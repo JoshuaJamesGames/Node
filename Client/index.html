@@ -61,14 +61,14 @@
 				scene = new THREE.Scene();
 				scene.background = new THREE.Color( 0x444444 );
 
-				camera = new THREE.PerspectiveCamera( 50, window.innerWidth / window.innerHeight, 0.1, 10 );
+				camera = new THREE.PerspectiveCamera( 50, window.innerWidth / window.innerHeight, 0.1, 30 );
 				camera.position.set( 0, 1.6, 3 );
 
 				controls = new OrbitControls( camera, container );
 				controls.target.set( 0, 1.6, 0 );
 				controls.update();
 
-				const floorGeometry = new THREE.PlaneGeometry( 4, 4 );
+				const floorGeometry = new THREE.PlaneGeometry( 8, 8 );
 				const floorMaterial = new THREE.MeshStandardMaterial( { color: 0x666666 } );
 				const floor = new THREE.Mesh( floorGeometry, floorMaterial );
 				floor.rotation.x = - Math.PI / 2;
@@ -118,12 +118,9 @@
 				hand1 = renderer.xr.getHand( 0 );
 				hand1.addEventListener( 'pinchstart', onPinchStartLeft );
 				hand1.addEventListener( 'pinchend', () => {
-
 					scaling.active = false;
-
 				} );
 				hand1.add( handModelFactory.createHandModel( hand1 ) );
-
 				scene.add( hand1 );
 
 				// Hand 2
@@ -176,7 +173,7 @@
 					if ( sphere ) {
 
 						const sphere2 = hand2.userData.selected;
-						console.log( 'sphere1', sphere, 'sphere2', sphere2 );
+						//console.log( 'sphere1', sphere, 'sphere2', sphere2 );
 						if ( sphere === sphere2 ) {
 
 							scaling.active = true;
@@ -239,7 +236,7 @@
 					grabbing = true;
 					indexTip.attach( object );
 					controller.userData.selected = object;
-					console.log( 'Selected', object );
+					//console.log( 'Selected', object );
 
 				}
 
