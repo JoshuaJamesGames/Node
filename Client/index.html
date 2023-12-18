@@ -120,6 +120,7 @@
 				hand1.addEventListener( 'pinchend', () => {
 					scaling.active = false;
 				} );
+				
 				hand1.add( handModelFactory.createHandModel( hand1 ) );
 				scene.add( hand1 );
 
@@ -131,6 +132,8 @@
 				hand2 = renderer.xr.getHand( 1 );
 				hand2.addEventListener( 'pinchstart', onPinchStartRight );
 				hand2.addEventListener( 'pinchend', onPinchEndRight );
+				hand2.addEventListener('squeezestart', onSqueezeStartRight);
+				hand2.addEventListener('squeezeend', onSqueezeEndRight);
 				hand2.add( handModelFactory.createHandModel( hand2 ) );
 				scene.add( hand2 );
 
@@ -259,6 +262,16 @@
 
 				scaling.active = false;
 
+			}
+
+			function onSqueezeStartRight( event ){
+				const controller = event.target;
+				
+			}
+
+			function onSqueezeEndRight( event ){
+				const controller = event.target;
+				
 			}
 
 			//
