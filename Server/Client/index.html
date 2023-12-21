@@ -282,7 +282,24 @@
 			const clientPlayers = {};
 
 			socket.on('updatePlayers', (backendPlayers)=> {
-				console.log(backendPlayers);
+				
+				for (const id in backendPlayers){
+					const backendPlayer = backendPlayers[id];
+					if(!clientPlayers[id]){
+						clientPlayers[id] = {
+							x: backendPlayer.x,
+							y: backendPlayer.y,
+							z: backendPlayer.z
+						}
+					}
+				}
+
+				for (const id in clientPlayers){
+					if (!backendPlayers[id]){
+						delete clientPlayers[id];
+					}
+				}
+				console.log(clientPlayers);
 			});
 
 

@@ -25,8 +25,15 @@ io.on('connection', (socket) =>{
 
   io.emit('updatePlayers', backendPlayers);
 
+  socket.on('disconnect', (reason) =>{
+    console.log(reason);
+    delete backendPlayers[socket.id];
+    io.emit('updatePlayers', backendPlayers);
+  });
+
   console.log(backendPlayers);
 });
+
 
 
 server.listen(port, () => {
