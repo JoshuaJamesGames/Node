@@ -66,14 +66,15 @@
 				scene = new THREE.Scene();
 				scene.background = new THREE.Color( 0x444444 );
 
+				const floorSize = 10;
 				camera = new THREE.PerspectiveCamera( 50, window.innerWidth / window.innerHeight, 0.1, 30 );
-				camera.position.set( 0, 1.6, 3 );
+				camera.position.set( (floorSize*2 * Math.random())-floorSize, 1.6, (floorSize*2 * Math.random())-floorSize );
 
 				controls = new OrbitControls( camera, container );
 				controls.target.set( 0, 1.6, 0 );
 				controls.update();
 
-				const floorGeometry = new THREE.PlaneGeometry( 8, 8 );
+				const floorGeometry = new THREE.PlaneGeometry( floorSize, floorSize );
 				const floorMaterial = new THREE.MeshStandardMaterial( { color: 0x666666 } );
 				const floor = new THREE.Mesh( floorGeometry, floorMaterial );
 				floor.rotation.x = - Math.PI / 2;

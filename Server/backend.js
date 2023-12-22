@@ -19,13 +19,14 @@ app.get('/', (req, res) => {
   res.sendFile(__dirname +'/index.html');
 });
 
+const floorSize = 10;
 const backendPlayers = {};
 io.on('connection', (socket) =>{
   console.log('A Player has Connected');
   backendPlayers[socket.id] = {
-    x: 0,
+    x: (floorSize*2 * Math.random())-floorSize,
     y: 1.6,
-    z: 3
+    z: (floorSize*2 * Math.random())-floorSize
   };
 
   io.emit('updatePlayers', backendPlayers);
