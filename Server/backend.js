@@ -1,8 +1,13 @@
 const express = require('express');
 const app = express();
 
-const http = require('http');
-const server = http.createServer(app);
+const https = require('https');
+const fs = require('fs');
+const options = {
+  key:fs.readFileSync(__dirname + '/certs/key.pem'),
+  cert:fs.readFileSync(__dirname + '/certs/cert.pem')
+}
+const server = https.createServer(options, app);
 const {Server} = require('socket.io');
 const io = new Server(server);
 const port = 5500;
