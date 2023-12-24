@@ -78,11 +78,17 @@
 				console.log(clientPlayers);
 			});
 
+			const clientObjects = {};
+
+			socket.on('updateObjects', (backendObjects)=>{
+
+			});
+
 			function sleep(ms) {
   				return new Promise(resolve => setTimeout(resolve, ms));
 			}
 
-			//Delay to connect socket
+			//Delay while socket connects
 			sleep(3000).then(init)
 			.then(animate);
 

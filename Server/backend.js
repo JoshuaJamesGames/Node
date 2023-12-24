@@ -40,6 +40,11 @@ io.on('connection', (socket) =>{
   console.log(backendPlayers);
 });
 
+const backendObjects = {};
+io.on('updateObjects',(object)=>{
+
+});
+
 
 
 server.listen(port, () => {
