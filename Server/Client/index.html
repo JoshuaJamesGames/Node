@@ -9,7 +9,7 @@
 	<body>
 
 		<div id="info">
-			<a href="https://threejs.org" target="_blank" rel="noopener">three.js</a> vr - handinput - cubes<br/>			
+			<a href="https://threejs.org" target="_blank" rel="noopener">three.js</a> vr - multiplayer handinput - cubes<br/>			
 		</div>
 
 		<script type="importmap">
@@ -55,8 +55,39 @@
 
 			const spheres = [];
 
-			init();
-			animate();
+			const clientPlayers = {};
+
+			socket.on('updatePlayers', (backendPlayers)=> {
+				
+				for (const id in backendPlayers){
+					const backendPlayer = backendPlayers[id];
+					if(!clientPlayers[id]){
+						clientPlayers[id] = {
+							x: backendPlayer.x,
+							y: backendPlayer.y,
+							z: backendPlayer.z
+						}
+					}
+				}
+
+				for (const id in clientPlayers){
+					if (!backendPlayers[id]){
+						delete clientPlayers[id];
+					}
+				}
+				console.log(clientPlayers);
+			});
+
+			function sleep(ms) {
+  				return new Promise(resolve => setTimeout(resolve, ms));
+			}
+
+			//Delay to connect socket
+			sleep(3000).then(init)
+			.then(animate);
+
+			//init();
+			//animate();
 
 			function init() {
 
@@ -67,8 +98,10 @@
 				scene.background = new THREE.Color( 0x444444 );
 
 				const floorSize = 10;
+
 				camera = new THREE.PerspectiveCamera( 50, window.innerWidth / window.innerHeight, 0.1, 30 );
-				camera.position.set( (floorSize*2 * Math.random())-floorSize, 1.6, (floorSize*2 * Math.random())-floorSize );
+				console.log(socket.connected);
+				camera.position.set( clientPlayers[socket.id].x, 1.6, clientPlayers[socket.id].z );
 
 				controls = new OrbitControls( camera, container );
 				controls.target.set( 0, 1.6, 0 );
@@ -159,6 +192,8 @@
 				window.addEventListener( 'resize', onWindowResize );
 
 			}
+
+			
 
 			function onWindowResize() {
 
@@ -280,28 +315,7 @@
 				
 			}
 
-			const clientPlayers = {};
-
-			socket.on('updatePlayers', (backendPlayers)=> {
-				
-				for (const id in backendPlayers){
-					const backendPlayer = backendPlayers[id];
-					if(!clientPlayers[id]){
-						clientPlayers[id] = {
-							x: backendPlayer.x,
-							y: backendPlayer.y,
-							z: backendPlayer.z
-						}
-					}
-				}
-
-				for (const id in clientPlayers){
-					if (!backendPlayers[id]){
-						delete clientPlayers[id];
-					}
-				}
-				console.log(clientPlayers);
-			});
+			
 
 
 			//
