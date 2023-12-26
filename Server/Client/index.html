@@ -81,7 +81,7 @@
 			const clientObjects = {};
 
 			socket.on('updateObjects', (backendObjects)=>{
-
+				console.log(spheres);
 			});
 
 			function sleep(ms) {
@@ -89,7 +89,7 @@
 			}
 
 			//Delay while socket connects
-			sleep(3000).then(init)
+			sleep(2000).then(init)
 			.then(animate);
 
 			//init();
@@ -194,6 +194,8 @@
 				controller2.add( line.clone() );
 
 				//
+				console.log(scene);
+				
 
 				window.addEventListener( 'resize', onWindowResize );
 
@@ -238,12 +240,14 @@
 
 				}
 
+				
 				const geometry = new THREE.BoxGeometry( SphereRadius, SphereRadius, SphereRadius );
 				const material = new THREE.MeshStandardMaterial( {
 					color: Math.random() * 0xffffff,
 					roughness: 1.0,
 					metalness: 0.0
 				} );
+				
 				const spawn = new THREE.Mesh( geometry, material );
 				spawn.geometry.computeBoundingSphere();
 
@@ -251,9 +255,18 @@
 				spawn.position.copy( indexTip.position );
 				spawn.quaternion.copy( indexTip.quaternion );
 
+				socket.emit('updateObjects', {
+					uuid: spawn.uuid,
+					color: spawn.color,
+					roughness: spawn.roughness,
+					metalness: spawn.metalness,
+					position: spawn.position,
+					quaternion: spawn.quaternion
+				})
+
 				spheres.push( spawn );
 
-				scene.add( spawn );
+				scene.add( spawn );				
 
 			}
 

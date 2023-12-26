@@ -42,7 +42,7 @@ io.on('connection', (socket) =>{
 
 const backendObjects = {};
 io.on('updateObjects',(object)=>{
-
+  console.log('Recieved object', object);
 });
 
 
