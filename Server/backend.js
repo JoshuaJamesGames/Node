@@ -21,6 +21,7 @@ app.get('/', (req, res) => {
 
 const floorSize = 10;
 const backendPlayers = {};
+const backendObjects = {};
 io.on('connection', (socket) =>{
   console.log('A Player has Connected');
   backendPlayers[socket.id] = {
@@ -35,14 +36,15 @@ io.on('connection', (socket) =>{
     console.log(reason);
     delete backendPlayers[socket.id];
     io.emit('updatePlayers', backendPlayers);
+  });  
+
+  socket.on('updateObjects', (object) =>{
+    console.log('Recieved object', object);
+    backendObjects.push(object);
+    io.emit('updateObjects', backendObjects);
   });
 
   console.log(backendPlayers);
-});
-
-const backendObjects = {};
-io.on('updateObjects',(object)=>{
-  console.log('Recieved object', object);
 });
 
 

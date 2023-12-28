@@ -81,7 +81,7 @@
 			const clientObjects = {};
 
 			socket.on('updateObjects', (backendObjects)=>{
-				console.log(spheres);
+				console.log(backendObjects);
 			});
 
 			function sleep(ms) {
@@ -92,9 +92,7 @@
 			sleep(500).then(init)
 			.then(animate);
 
-			//init();
-			//animate();
-
+			
 			function init() {
 
 				container = document.createElement( 'div' );
@@ -255,14 +253,15 @@
 				spawn.position.copy( indexTip.position );
 				spawn.quaternion.copy( indexTip.quaternion );
 
+				
 				socket.emit('updateObjects', {
 					uuid: spawn.uuid,
-					color: spawn.color,
-					roughness: spawn.roughness,
-					metalness: spawn.metalness,
+					color: material.color,
+					roughness: material.roughness,
+					metalness: material.metalness,
 					position: spawn.position,
 					quaternion: spawn.quaternion
-				})
+				} );
 
 				spheres.push( spawn );
 
