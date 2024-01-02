@@ -29,8 +29,13 @@ io.on('connection', (socket) =>{
     y: 1.6,
     z: (floorSize*2 * Math.random())-floorSize
   };
-
+  
+  
   io.emit('updatePlayers', backendPlayers);
+  setTimeout(()=>{
+    io.emit('updateObjects', backendObjects);
+  }, 1000)
+  //io.emit('updateObjects', backendObjects);
 
   socket.on('disconnect', (reason) =>{
     console.log(reason);
@@ -40,7 +45,15 @@ io.on('connection', (socket) =>{
 
   socket.on('updateObjects', (object) =>{
     console.log('Recieved object', object);
-    backendObjects.push(object);
+    backendObjects[object.uuid] = {
+      color: object.color,
+      roughness: object.roughness,
+      metalness: object.metalness,
+      position: object.position,
+      quaternion: object.quaternion,
+      rotation: object.rotation,
+      scale: object.scale
+    };
     io.emit('updateObjects', backendObjects);
   });
 
@@ -50,7 +63,7 @@ io.on('connection', (socket) =>{
 
 
 server.listen(port, () => {
-  console.log(`Server running at http://${hostname}:${port}/`);
+  console.log(`Server running at https://${hostname}:${port}/`);
 });
 
 
