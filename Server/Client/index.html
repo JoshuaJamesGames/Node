@@ -46,7 +46,7 @@
 				console.log(scene);
 
 			},30000);
-			
+
 			const socket = io();
 
 			let container;
@@ -93,13 +93,11 @@
 				console.log(clientPlayers);
 			});
 
-			const clientObjects = {};
-
-			socket.on('updateObjects', (backendObjects)=>{
+			socket.on('createObjects', (backendObjects)=>{
 				for (const id in backendObjects){
 					const newObject = scene.getObjectByProperty('uuid',id);
 					if(!newObject){
-						console.log(`missing ${id}`);
+						console.log(`adding ${id}`);
 
 						const geometry = new THREE.BoxGeometry( SphereRadius, SphereRadius, SphereRadius );
 						const material = new THREE.MeshStandardMaterial( {
@@ -120,13 +118,23 @@
 						scene.add( spawn );
 					}
 				} 
-				console.log(backendObjects);
+				//console.log(backendObjects);
 				
 			});
 
-			
+			//To hold updates
+			const objectsToUpdate = {};
 
-			
+			socket.on('clientUpdateObject', (object)=>{
+				
+					const updateObject = scene.getObjectByProperty('uuid',object.uuid);
+					updateObject.position.copy(object.position);
+					updateObject.quaternion.copy(object.quaternion);
+					updateObject.rotation.copy(object.rotation);
+					updateObject.scale.copy(object.scale);
+				
+			});
+
 			function init() {
 
 				container = document.createElement( 'div' );
@@ -288,7 +296,7 @@
 				spawn.quaternion.copy( indexTip.quaternion );
 
 				
-				socket.emit('updateObjects', {
+				socket.emit('createObject', {
 					uuid: spawn.uuid,
 					color: material.color,
 					roughness: material.roughness,
@@ -333,8 +341,11 @@
 
 					grabbing = true;
 					indexTip.attach( object );
+					object.material.emissive.b = 1;
 					controller.userData.selected = object;
 					//console.log( 'Selected', object );
+					objectsToUpdate[object.uuid]={};
+					console.log(objectsToUpdate);
 
 				}
 
@@ -349,7 +360,8 @@
 					const object = controller.userData.selected;
 					object.material.emissive.b = 0;
 					scene.attach( object );
-
+					delete objectsToUpdate[object.uuid];
+					console.log(objectsToUpdate);
 					controller.userData.selected = undefined;
 					grabbing = false;
 
@@ -391,6 +403,18 @@
 					scaling.object.scale.setScalar( newScale );
 
 				}
+
+				for(const id in objectsToUpdate){
+					const object = scene.getObjectByProperty('uuid', id);
+					socket.emit('clientUpdateObject', {
+						uuid: object.uuid,
+						position: object.parent.position,
+						quaternion: object.parent.quaternion,
+						rotation: object.parent.rotation,
+						scale: object.scale
+					} );
+				}
+				
 
 				renderer.render( scene, camera );
 

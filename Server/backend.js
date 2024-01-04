@@ -26,16 +26,17 @@ io.on('connection', (socket) =>{
   console.log('A Player has Connected');
   backendPlayers[socket.id] = {
     x: (floorSize*2 * Math.random())-floorSize,
-    y: 1.6,
+    y: .8,
     z: (floorSize*2 * Math.random())-floorSize
   };
   
-  
+  //When a player connects
   io.emit('updatePlayers', backendPlayers);
+  //Update for new players needs to wait for three.js scene to initialize
   setTimeout(()=>{
-    io.emit('updateObjects', backendObjects);
+    io.emit('createObjects', backendObjects);
   }, 1000)
-  //io.emit('updateObjects', backendObjects);
+  
 
   socket.on('disconnect', (reason) =>{
     console.log(reason);
@@ -43,8 +44,8 @@ io.on('connection', (socket) =>{
     io.emit('updatePlayers', backendPlayers);
   });  
 
-  socket.on('updateObjects', (object) =>{
-    console.log('Recieved object', object);
+  socket.on('createObject', (object) =>{
+    console.log('New object');
     backendObjects[object.uuid] = {
       color: object.color,
       roughness: object.roughness,
@@ -54,11 +55,24 @@ io.on('connection', (socket) =>{
       rotation: object.rotation,
       scale: object.scale
     };
-    io.emit('updateObjects', backendObjects);
+    io.emit('createObjects', backendObjects);
+  });
+
+  socket.on('clientUpdateObject', (object) =>{
+    //console.log(`updating ${object}`);
+    backendObjects[object.uuid].position = object.position;
+    backendObjects[object.uuid].quaternion = object.quaternion;
+    backendObjects[object.uuid].rotation = object.rotation;
+    backendObjects[object.uuid].scale = object.scale;
+    socket.broadcast.emit('clientUpdateObject', object);
   });
 
   console.log(backendPlayers);
 });
+
+//setInterval(()=>{
+//  io.emit('serverUpdateObjects', backendObjects);
+//}, 20);
 
 
 
