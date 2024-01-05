@@ -26,8 +26,13 @@ io.on('connection', (socket) =>{
   console.log('A Player has Connected');
   backendPlayers[socket.id] = {
     x: (floorSize*2 * Math.random())-floorSize,
-    y: .8,
-    z: (floorSize*2 * Math.random())-floorSize
+    y: 1.6,
+    z: (floorSize*2 * Math.random())-floorSize,
+    head:{
+      position:{},
+      quaternion:{},
+      rotation:{}
+    }    
   };
   
   //When a player connects
@@ -67,12 +72,19 @@ io.on('connection', (socket) =>{
     socket.broadcast.emit('clientUpdateObject', object);
   });
 
+  socket.on('playerPosition', (object) =>{
+    //console.log(object);
+    backendPlayers[socket.id].head = object.head;
+    
+  });
+
   console.log(backendPlayers);
 });
 
-//setInterval(()=>{
-//  io.emit('serverUpdateObjects', backendObjects);
-//}, 20);
+setInterval(()=>{
+  io.emit('updatePlayerPositions', backendPlayers);
+  //console.log(backendPlayers);
+}, 30);
 
 
 

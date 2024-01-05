@@ -82,15 +82,48 @@
 							y: backendPlayer.y,
 							z: backendPlayer.z
 						}
+						const headSize = 0.2;
+						const geometry = new THREE.BoxGeometry( headSize, headSize, headSize );
+						const material = new THREE.MeshStandardMaterial( {
+							color: Math.random() * 0xffffff,
+							roughness: 1.0,
+							metalness: 0.0
+						} );
+				
+						const spawn = new THREE.Mesh( geometry, material );
+						spawn.name = id;
+						spawn.geometry.computeBoundingSphere();
+						//Camera isn't ready yet so keep hidden	below floor					
+						spawn.position.copy(new THREE.Vector3(0,-2,0));						
+						
+						//spheres.push( spawn );
+						//wait for scene to initialize
+						setTimeout(()=>{
+							scene.add( spawn );
+						},1000);
 					}
 				}
 
 				for (const id in clientPlayers){
 					if (!backendPlayers[id]){
+						let leavingPlayer = scene.getObjectByProperty('name',id);
+						scene.remove(leavingPlayer);
 						delete clientPlayers[id];
+						
 					}
 				}
 				console.log(clientPlayers);
+				
+			});
+
+			socket.on('updatePlayerPositions', (backendPlayers)=>{
+				for (const id in backendPlayers){
+					const backendPlayer = backendPlayers[id];
+					const playerHead = scene.getObjectByProperty('name', id);
+					playerHead.position.copy(backendPlayers[id].head.position);
+					playerHead.quaternion.copy(backendPlayers[id].head.quaternion);
+					playerHead.rotation.copy(backendPlayers[id].head.rotation);
+				}
 			});
 
 			socket.on('createObjects', (backendObjects)=>{
@@ -118,6 +151,8 @@
 						scene.add( spawn );
 					}
 				} 
+				
+				console.log(camera);
 				//console.log(backendObjects);
 				
 			});
@@ -147,7 +182,7 @@
 
 				camera = new THREE.PerspectiveCamera( 50, window.innerWidth / window.innerHeight, 0.1, 30 );
 				console.log(socket.connected);
-				camera.position.set( clientPlayers[socket.id].x, 1.6, clientPlayers[socket.id].z );
+				camera.position.set( clientPlayers[socket.id].x, clientPlayers[socket.id].y, clientPlayers[socket.id].z );
 
 				controls = new OrbitControls( camera, container );
 				controls.target.set( 0, 1.6, 0 );
@@ -384,7 +419,19 @@
 			
 
 
-			//
+			//Update client personal position on interval
+			setInterval(()=>{
+				socket.emit('playerPosition',{
+					
+					head: {
+						position: camera.position,
+						rotation: camera.rotation,
+						quaternion: camera.quaternion
+					}
+
+				});
+			}, 30);
+			
 
 			function animate() {
 
@@ -413,7 +460,7 @@
 						rotation: object.parent.rotation,
 						scale: object.scale
 					} );
-				}
+				}			
 				
 
 				renderer.render( scene, camera );
