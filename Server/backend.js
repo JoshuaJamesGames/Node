@@ -82,8 +82,10 @@ io.on('connection', (socket) =>{
 });
 
 setInterval(()=>{
-  io.emit('updatePlayerPositions', backendPlayers);
-  //console.log(backendPlayers);
+  
+    io.emit('updatePlayerPositions', backendPlayers);
+    //console.log(backendPlayers);
+  
 }, 30);
 
 
