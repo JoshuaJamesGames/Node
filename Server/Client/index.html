@@ -124,7 +124,7 @@
 			socket.on('updatePlayerPositions', (backendPlayers)=>{
 				for (const id in backendPlayers){
 					const backendPlayer = backendPlayers[id];
-					
+
 					//Scene needs to load
 					if(scene){
 						const playerHead = scene.getObjectByProperty('name', id);					
@@ -436,7 +436,7 @@
 			setInterval(()=>{
 				//Camera won't exist for a bit
 				if(camera){
-					socket.emit('playerPosition',{
+					socket.emit('playerHeadPosition',{
 						
 						head: {
 							position: camera.position,

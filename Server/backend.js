@@ -32,16 +32,22 @@ io.on('connection', (socket) =>{
       position:{},
       quaternion:{},
       rotation:{}
-    }    
+    },
+    hand0:{
+
+    },
+    hand1:{
+
+    }   
   };
   
   //When a player connects
   io.emit('updatePlayers', backendPlayers);
+
   //Update for new players needs to wait for three.js scene to initialize
   setTimeout(()=>{
     io.emit('createObjects', backendObjects);
-  }, 1000)
-  
+  }, 1000)  
 
   socket.on('disconnect', (reason) =>{
     console.log(reason);
@@ -72,7 +78,7 @@ io.on('connection', (socket) =>{
     socket.broadcast.emit('clientUpdateObject', object);
   });
 
-  socket.on('playerPosition', (object) =>{
+  socket.on('playerHeadPosition', (object) =>{
     //console.log(object);
     backendPlayers[socket.id].head = object.head;
     
