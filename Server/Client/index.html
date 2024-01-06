@@ -85,34 +85,47 @@
 							y: backendPlayer.y,
 							z: backendPlayer.z
 						}
-						const headSize = 0.2;
-						const geometry = new THREE.BoxGeometry( headSize, headSize, headSize );
+						const headSize = 0.15;
+						const widthSegments = 6;
+						const heightSegments = 6;
+						const headGeometry = new THREE.SphereGeometry( headSize, widthSegments, heightSegments );
 						const material = new THREE.MeshStandardMaterial( {
 							color: Math.random() * 0xffffff,
 							roughness: 1.0,
 							metalness: 0.0
 						} );
 				
-						const spawn = new THREE.Mesh( geometry, material );
-						spawn.name = id;
-						spawn.geometry.computeBoundingSphere();
+						const head = new THREE.Mesh( headGeometry, material );
+						head.name = id;
+						head.geometry.computeBoundingSphere();
 						//Camera isn't ready yet so keep hidden	below floor					
-						spawn.position.copy(new THREE.Vector3(0,-2,0));	
+						head.position.copy(new THREE.Vector3(0,-2,0));	
 
 						//don't add to standard collision, but maybe later
 						//spheres.push( spawn );
+						const handSize = .05;
+						const handGeometry = new THREE.SphereGeometry( handSize, widthSegments, heightSegments );
+						const leftHandMesh = new THREE.Mesh( handGeometry, material );
+						leftHandMesh.name = id+'leftHandWrist';
+						const rightHandMesh = new THREE.Mesh( handGeometry, material );
+						rightHandMesh.name = id+'rightHandWrist';
+						
 
 						//wait for scene to initialize
 						setTimeout(()=>{
-							scene.add( spawn );
+							scene.add( head );							
+							scene.add(leftHandMesh);							
+							scene.add(rightHandMesh);
 						},1000);
 					}
 				}
 
 				for (const id in clientPlayers){
 					if (!backendPlayers[id]){
-						let leavingPlayer = scene.getObjectByProperty('name',id);
+						let leavingPlayer = scene.getObjectByProperty('name', id);
 						scene.remove(leavingPlayer);
+						scene.remove(scene.getObjectByProperty('name', id+'leftHandWrist'));
+						scene.remove(scene.getObjectByProperty('name', id+'rightHandWrist'));
 						delete clientPlayers[id];
 						
 					}
@@ -128,12 +141,32 @@
 					//Scene needs to load
 					if(scene){
 						const playerHead = scene.getObjectByProperty('name', id);					
-					
+						
 						//This might be empty if the scene hasn't loaded before updates roll in
 						if(playerHead){
 							playerHead.position.copy(backendPlayers[id].head.position);
 							playerHead.quaternion.copy(backendPlayers[id].head.quaternion);
 							playerHead.rotation.copy(backendPlayers[id].head.rotation);
+
+							
+							//console.log(backendPlayers[id].leftHand.position);
+							let leftHandWrist = scene.getObjectByName(id+'leftHandWrist');
+							if(backendPlayers[id].leftHand.visible){
+								leftHandWrist.position.copy(backendPlayers[id].leftHand.position);
+								leftHandWrist.quaternion.copy(backendPlayers[id].leftHand.quaternion);
+								leftHandWrist.rotation.copy(backendPlayers[id].leftHand.rotation);
+							}else{
+								leftHandWrist.visible=false;
+							}
+							let rightHandWrist = scene.getObjectByName(id+'rightHandWrist');
+							if(backendPlayers[id].rightHand.visible){
+								rightHandWrist.position.copy(backendPlayers[id].rightHand.position);
+								rightHandWrist.quaternion.copy(backendPlayers[id].rightHand.quaternion);
+								rightHandWrist.rotation.copy(backendPlayers[id].rightHand.rotation);
+							}else{
+								rightHandWrist.visible=false;
+							}
+
 						}
 					}
 				}
@@ -164,8 +197,7 @@
 						scene.add( spawn );
 					}
 				} 
-				
-				console.log(camera);
+								
 				//console.log(backendObjects);
 				
 			});
@@ -194,7 +226,7 @@
 				const floorSize = 10;
 
 				camera = new THREE.PerspectiveCamera( 50, window.innerWidth / window.innerHeight, 0.1, 30 );
-				console.log(socket.connected);
+				console.log(`Socket id:${socket.id} connected`);
 				camera.position.set( clientPlayers[socket.id].x, clientPlayers[socket.id].y, clientPlayers[socket.id].z );
 
 				controls = new OrbitControls( camera, container );
@@ -255,6 +287,7 @@
 				} );
 				
 				hand1.add( handModelFactory.createHandModel( hand1 ) );
+				hand1.name = 'hand1';
 				scene.add( hand1 );
 
 				// Hand 2
@@ -268,6 +301,7 @@
 				hand2.addEventListener('squeezestart', onSqueezeStartRight);
 				hand2.addEventListener('squeezeend', onSqueezeEndRight);
 				hand2.add( handModelFactory.createHandModel( hand2 ) );
+				hand2.name = 'hand2';
 				scene.add( hand2 );
 
 				//
@@ -445,6 +479,35 @@
 						}
 
 					});
+					const leftHand = scene.getObjectByName('hand1');
+					const rightHand = scene.getObjectByName('hand2');
+					if(leftHand.visible && rightHand.visible){
+						
+						socket.emit('playerHandUpdate',{
+							leftHand:{
+								visible: true,
+								position: leftHand.joints.wrist.position,
+								quaternion: leftHand.joints.wrist.quaternion,
+								rotation: leftHand.joints.wrist.rotation
+							},
+							rightHand:{
+								visible: true,
+								position: rightHand.joints.wrist.position,
+								quaternion: rightHand.joints.wrist.quaternion,
+								rotation: rightHand.joints.wrist.rotation
+							}
+						});
+
+					}else{
+						socket.emit('playerHandUpdate',{
+							leftHand:{
+								visible: false								
+							},
+							rightHand:{
+								visible: false
+							}
+						});
+					}					
 				}	
 			}, 30);
 			

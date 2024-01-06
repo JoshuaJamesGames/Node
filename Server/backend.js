@@ -33,11 +33,15 @@ io.on('connection', (socket) =>{
       quaternion:{},
       rotation:{}
     },
-    hand0:{
-
+    leftHand:{
+      position:{},
+      quaternion:{},
+      rotation:{}
     },
-    hand1:{
-
+    rightHand:{
+      position:{},
+      quaternion:{},
+      rotation:{}
     }   
   };
   
@@ -82,6 +86,12 @@ io.on('connection', (socket) =>{
     //console.log(object);
     backendPlayers[socket.id].head = object.head;
     
+  });
+
+  socket.on('playerHandUpdate', (hands)=>{
+    //console.log(hands);
+    backendPlayers[socket.id].leftHand = hands.leftHand;
+    backendPlayers[socket.id].rightHand = hands.rightHand;
   });
 
   console.log(backendPlayers);
