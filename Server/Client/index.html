@@ -103,11 +103,12 @@
 
 						//don't add to standard collision, but maybe later
 						//spheres.push( spawn );
-						const handSize = .05;
-						const handGeometry = new THREE.SphereGeometry( handSize, widthSegments, heightSegments );
-						const leftHandMesh = new THREE.Mesh( handGeometry, material );
+						const handSize = .02;
+						const handSphereGeometry = new THREE.SphereGeometry( handSize, widthSegments, heightSegments );
+						//const handBufferGeometry = new THREE.SphereBufferGeometry( handSize, widthSegments, heightSegments  );
+						const leftHandMesh = new THREE.Mesh( handSphereGeometry, material, 25 );
 						leftHandMesh.name = id+'leftHandWrist';
-						const rightHandMesh = new THREE.Mesh( handGeometry, material );
+						const rightHandMesh = new THREE.Mesh( handSphereGeometry, material, 25 );
 						rightHandMesh.name = id+'rightHandWrist';
 						
 
@@ -155,17 +156,17 @@
 								leftHandWrist.position.copy(backendPlayers[id].leftHand.position);
 								leftHandWrist.quaternion.copy(backendPlayers[id].leftHand.quaternion);
 								leftHandWrist.rotation.copy(backendPlayers[id].leftHand.rotation);
-							}else{
-								leftHandWrist.visible=false;
-							}
+							}//else{
+							//	leftHandWrist.visible=false;
+							//}
 							let rightHandWrist = scene.getObjectByName(id+'rightHandWrist');
 							if(backendPlayers[id].rightHand.visible){
 								rightHandWrist.position.copy(backendPlayers[id].rightHand.position);
 								rightHandWrist.quaternion.copy(backendPlayers[id].rightHand.quaternion);
 								rightHandWrist.rotation.copy(backendPlayers[id].rightHand.rotation);
-							}else{
-								rightHandWrist.visible=false;
-							}
+							}//else{
+							//	rightHandWrist.visible=false;
+							//}
 
 						}
 					}
@@ -427,7 +428,7 @@
 					controller.userData.selected = object;
 					//console.log( 'Selected', object );
 					objectsToUpdate[object.uuid]={};
-					console.log(objectsToUpdate);
+					//console.log(objectsToUpdate);
 
 				}
 
@@ -443,7 +444,7 @@
 					object.material.emissive.b = 0;
 					scene.attach( object );
 					delete objectsToUpdate[object.uuid];
-					console.log(objectsToUpdate);
+					//console.log(objectsToUpdate);
 					controller.userData.selected = undefined;
 					grabbing = false;
 
