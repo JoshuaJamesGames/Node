@@ -106,7 +106,7 @@
 						const handSize = .02;
 						const handSphereGeometry = new THREE.SphereGeometry( handSize, widthSegments, heightSegments );
 						//const handBufferGeometry = new THREE.SphereBufferGeometry( handSize, widthSegments, heightSegments  );
-						const leftHandMesh = new THREE.Mesh( handSphereGeometry, material, 25 );
+						const leftHandMesh = new THREE.InstancedMesh( handSphereGeometry, material, 25 );
 						leftHandMesh.name = id+'leftHandWrist';
 						const rightHandMesh = new THREE.Mesh( handSphereGeometry, material, 25 );
 						rightHandMesh.name = id+'rightHandWrist';
@@ -135,6 +135,9 @@
 				
 			});
 
+			//Need a dummy to apply many matrix transformations to mesh hands
+			const dummy = new THREE.Object3D();
+
 			socket.on('updatePlayerPositions', (backendPlayers)=>{
 				for (const id in backendPlayers){
 					const backendPlayer = backendPlayers[id];
@@ -151,11 +154,22 @@
 
 							
 							//console.log(backendPlayers[id].leftHand.position);
+
 							let leftHandWrist = scene.getObjectByName(id+'leftHandWrist');
 							if(backendPlayers[id].leftHand.visible){
-								leftHandWrist.position.copy(backendPlayers[id].leftHand.position);
-								leftHandWrist.quaternion.copy(backendPlayers[id].leftHand.quaternion);
-								leftHandWrist.rotation.copy(backendPlayers[id].leftHand.rotation);
+								dummy.quaternion.copy(backendPlayers[id].leftHand.quaternion);
+								dummy.rotation.copy(backendPlayers[id].leftHand.rotation);
+								//leftHandWrist.position.copy(backendPlayers[id].leftHand.positions[0]);
+								for(let i = 0; i < backendPlayers[id].leftHand.positions.length; i++){
+									
+									dummy.position.copy(backendPlayers[id].leftHand.positions[i]);
+									dummy.updateMatrix();									
+									leftHandWrist.setMatrixAt(i, dummy.matrix);
+								}								
+								//leftHandWrist.quaternion.copy(backendPlayers[id].leftHand.quaternion);
+								//leftHandWrist.rotation.copy(backendPlayers[id].leftHand.rotation);
+								
+								leftHandWrist.instanceMatrix.needsUpdate = true;
 							}//else{
 							//	leftHandWrist.visible=false;
 							//}
@@ -482,12 +496,16 @@
 					});
 					const leftHand = scene.getObjectByName('hand1');
 					const rightHand = scene.getObjectByName('hand2');
+					let leftHandJointLocations = [];
+					let rightHandJointLocations = [];
 					if(leftHand.visible && rightHand.visible){
-						
+						for(const id in leftHand.joints){
+							leftHandJointLocations.push(leftHand.joints[id].position);
+						}
 						socket.emit('playerHandUpdate',{
 							leftHand:{
 								visible: true,
-								position: leftHand.joints.wrist.position,
+								positions: leftHandJointLocations,
 								quaternion: leftHand.joints.wrist.quaternion,
 								rotation: leftHand.joints.wrist.rotation
 							},
@@ -542,7 +560,7 @@
 					} );
 				}			
 				
-
+				
 				renderer.render( scene, camera );
 
 			}
