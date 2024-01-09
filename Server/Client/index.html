@@ -103,13 +103,15 @@
 
 						//don't add to standard collision, but maybe later
 						//spheres.push( spawn );
-						const handSize = .02;
+						const handSize = .015;
 						const handSphereGeometry = new THREE.SphereGeometry( handSize, widthSegments, heightSegments );
 						//const handBufferGeometry = new THREE.SphereBufferGeometry( handSize, widthSegments, heightSegments  );
 						const leftHandMesh = new THREE.InstancedMesh( handSphereGeometry, material, 25 );
 						leftHandMesh.name = id+'leftHandWrist';
-						const rightHandMesh = new THREE.Mesh( handSphereGeometry, material, 25 );
+						leftHandMesh.frustumCulled = false;
+						const rightHandMesh = new THREE.InstancedMesh( handSphereGeometry, material, 25 );
 						rightHandMesh.name = id+'rightHandWrist';
+						rightHandMesh.frustumCulled = false;
 						
 
 						//wait for scene to initialize
@@ -141,11 +143,13 @@
 			socket.on('updatePlayerPositions', (backendPlayers)=>{
 				for (const id in backendPlayers){
 					const backendPlayer = backendPlayers[id];
-
+					
 					//Scene needs to load
 					if(scene){
 						const playerHead = scene.getObjectByProperty('name', id);					
-						
+						if(id == socket.id){
+							playerHead.visible = false;
+						}
 						//This might be empty if the scene hasn't loaded before updates roll in
 						if(playerHead){
 							playerHead.position.copy(backendPlayers[id].head.position);
@@ -156,31 +160,41 @@
 							//console.log(backendPlayers[id].leftHand.position);
 
 							let leftHandWrist = scene.getObjectByName(id+'leftHandWrist');
+							
 							if(backendPlayers[id].leftHand.visible){
+								leftHandWrist.visible=true;
 								dummy.quaternion.copy(backendPlayers[id].leftHand.quaternion);
 								dummy.rotation.copy(backendPlayers[id].leftHand.rotation);
-								//leftHandWrist.position.copy(backendPlayers[id].leftHand.positions[0]);
+								
 								for(let i = 0; i < backendPlayers[id].leftHand.positions.length; i++){
-									
+									dummy.scale.setScalar(1-((i%5)*.1));
 									dummy.position.copy(backendPlayers[id].leftHand.positions[i]);
 									dummy.updateMatrix();									
 									leftHandWrist.setMatrixAt(i, dummy.matrix);
 								}								
-								//leftHandWrist.quaternion.copy(backendPlayers[id].leftHand.quaternion);
-								//leftHandWrist.rotation.copy(backendPlayers[id].leftHand.rotation);
 								
 								leftHandWrist.instanceMatrix.needsUpdate = true;
-							}//else{
-							//	leftHandWrist.visible=false;
-							//}
+							}else{
+								leftHandWrist.visible=false;
+							}
 							let rightHandWrist = scene.getObjectByName(id+'rightHandWrist');
 							if(backendPlayers[id].rightHand.visible){
-								rightHandWrist.position.copy(backendPlayers[id].rightHand.position);
-								rightHandWrist.quaternion.copy(backendPlayers[id].rightHand.quaternion);
-								rightHandWrist.rotation.copy(backendPlayers[id].rightHand.rotation);
-							}//else{
-							//	rightHandWrist.visible=false;
-							//}
+								rightHandWrist.visible=true;
+								dummy.quaternion.copy(backendPlayers[id].rightHand.quaternion);
+								dummy.rotation.copy(backendPlayers[id].rightHand.rotation);
+
+								for(let i = 0; i < backendPlayers[id].rightHand.positions.length; i++){
+									
+									dummy.scale.setScalar(1-((i%5)*.1));
+									dummy.position.copy(backendPlayers[id].rightHand.positions[i]);
+									dummy.updateMatrix();									
+									rightHandWrist.setMatrixAt(i, dummy.matrix);
+								
+								}
+								rightHandWrist.instanceMatrix.needsUpdate = true;								
+							}else{
+								rightHandWrist.visible=false;
+							}
 
 						}
 					}
@@ -502,6 +516,9 @@
 						for(const id in leftHand.joints){
 							leftHandJointLocations.push(leftHand.joints[id].position);
 						}
+						for(const id in rightHand.joints){
+							rightHandJointLocations.push(rightHand.joints[id].position);
+						}
 						socket.emit('playerHandUpdate',{
 							leftHand:{
 								visible: true,
@@ -511,7 +528,7 @@
 							},
 							rightHand:{
 								visible: true,
-								position: rightHand.joints.wrist.position,
+								positions: rightHandJointLocations,
 								quaternion: rightHand.joints.wrist.quaternion,
 								rotation: rightHand.joints.wrist.rotation
 							}
