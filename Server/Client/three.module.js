@@ -26554,6 +26554,40 @@ class WebXRController {
 					} );
 
 				}
+				//squeeze, squeezestart, & squeezeend
+				const middleTip = hand.joints[ 'middle-finger-tip' ];
+				const ringTip = hand.joints[ 'ring-finger-tip' ];
+				const pinkyTip = hand.joints[ 'pinky-finger-tip' ];
+				const middleMetacarpal = hand.joints[ 'middle-finger-metacarpal' ];				
+
+				//middle point of 3 tips
+				const squeezeCenter = new Vector3((middleTip.position.x +ringTip.position.x + pinkyTip.position.x)/3,
+				(middleTip.position.y +ringTip.position.y + pinkyTip.position.y)/3,
+				(middleTip.position.z +ringTip.position.z + pinkyTip.position.z)/3);
+				
+				const squeezeDistance = squeezeCenter.distanceTo( middleMetacarpal.position );
+				const distanceToSqueeze = 0.04;
+				const squeezethreshold = 0.005;
+
+				if ( hand.inputState.squeezing && squeezeDistance > distanceToSqueeze + squeezethreshold ) {
+
+					hand.inputState.squeezing = false;
+					this.dispatchEvent( {
+						type: 'squeezeend',
+						handedness: inputSource.handedness,
+						target: this
+					} );
+
+				} else if ( ! hand.inputState.squeezing && squeezeDistance <= distanceToSqueeze - squeezethreshold ) {
+
+					hand.inputState.squeezing = true;
+					this.dispatchEvent( {
+						type: 'squeezestart',
+						handedness: inputSource.handedness,
+						target: this
+					} );
+
+				}
 
 			} else {
 

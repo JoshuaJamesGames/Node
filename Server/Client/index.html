@@ -89,13 +89,13 @@
 						const widthSegments = 6;
 						const heightSegments = 6;
 						const headGeometry = new THREE.SphereGeometry( headSize, widthSegments, heightSegments );
-						const material = new THREE.MeshStandardMaterial( {
+						const headMaterial = new THREE.MeshStandardMaterial( {
 							color: Math.random() * 0xffffff,
 							roughness: 1.0,
 							metalness: 0.0
 						} );
 				
-						const head = new THREE.Mesh( headGeometry, material );
+						const head = new THREE.Mesh( headGeometry, headMaterial );
 						head.name = id;
 						head.geometry.computeBoundingSphere();
 						//Camera isn't ready yet so keep hidden	below floor					
@@ -103,13 +103,14 @@
 
 						//don't add to standard collision, but maybe later
 						//spheres.push( spawn );
-						const handSize = .015;
-						const handSphereGeometry = new THREE.SphereGeometry( handSize, widthSegments, heightSegments );
-						//const handBufferGeometry = new THREE.SphereBufferGeometry( handSize, widthSegments, heightSegments  );
-						const leftHandMesh = new THREE.InstancedMesh( handSphereGeometry, material, 25 );
+						const handJointSize = .015;
+						const handSphereGeometry = new THREE.SphereGeometry( handJointSize, widthSegments, heightSegments );
+						const leftHandMaterial = headMaterial.clone();
+						const leftHandMesh = new THREE.InstancedMesh( handSphereGeometry, leftHandMaterial, 25 );
 						leftHandMesh.name = id+'leftHandWrist';
 						leftHandMesh.frustumCulled = false;
-						const rightHandMesh = new THREE.InstancedMesh( handSphereGeometry, material, 25 );
+						const rightHandMaterial = headMaterial.clone();
+						const rightHandMesh = new THREE.InstancedMesh( handSphereGeometry, rightHandMaterial, 25 );
 						rightHandMesh.name = id+'rightHandWrist';
 						rightHandMesh.frustumCulled = false;
 						
@@ -314,6 +315,8 @@
 				hand1.addEventListener( 'pinchend', () => {
 					scaling.active = false;
 				} );
+				hand1.addEventListener('squeezestart', onSqueezeStartLeft);
+				hand1.addEventListener('squeezeend', onSqueezeEndLeft);
 				
 				hand1.add( handModelFactory.createHandModel( hand1 ) );
 				hand1.name = 'hand1';
@@ -484,15 +487,35 @@
 
 			function onSqueezeStartRight( event ){
 				const controller = event.target;
+				const rightHand = scene.getObjectByProperty('name', socket.id+'rightHandWrist');
+				rightHand.material.emissive.b = 1;
+				
 				
 			}
 
 			function onSqueezeEndRight( event ){
 				const controller = event.target;
+				const rightHand = scene.getObjectByProperty('name', socket.id+'rightHandWrist');
+				rightHand.material.emissive.b = 0;
+				
 				
 			}
 
-			
+			function onSqueezeStartLeft( event ){
+				const controller = event.target;
+				const leftHand = scene.getObjectByProperty('name', socket.id+'leftHandWrist');
+				leftHand.material.emissive.b = 1;
+				
+				
+			}
+
+			function onSqueezeEndLeft( event ){
+				const controller = event.target;
+				const leftHand = scene.getObjectByProperty('name', socket.id+'leftHandWrist');
+				leftHand.material.emissive.b = 0;
+				
+				
+			}		
 
 
 			//Update client personal position on interval
