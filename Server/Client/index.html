@@ -85,7 +85,7 @@
 							y: backendPlayer.y,
 							z: backendPlayer.z
 						}
-						const headSize = 0.15;
+						const headSize = 0.1;
 						const widthSegments = 6;
 						const heightSegments = 6;
 						const headGeometry = new THREE.SphereGeometry( headSize, widthSegments, heightSegments );
@@ -445,7 +445,7 @@
 				return null;
 
 			}
-
+			//Hand events
 			function onPinchStartRight( event ) {
 
 				const controller = event.target;
@@ -579,6 +579,7 @@
 
 			function render() {
 
+				//If the same object is being pinched by both hands...scale it
 				if ( scaling.active ) {
 
 					const indexTip1Pos = hand1.joints[ 'index-finger-tip' ].position;
@@ -588,7 +589,7 @@
 					scaling.object.scale.setScalar( newScale );
 
 				}
-
+				//If an object is being moved, send the movement to the server
 				for(const id in objectsToUpdate){
 					const object = scene.getObjectByProperty('uuid', id);
 					socket.emit('clientUpdateObject', {
