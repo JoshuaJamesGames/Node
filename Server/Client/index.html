@@ -94,8 +94,9 @@
 						const widthSegments = 6;
 						const heightSegments = 6;
 						const headGeometry = new THREE.SphereGeometry( headSize, widthSegments, heightSegments );
+						
 						const headMaterial = new THREE.MeshStandardMaterial( {
-							color: Math.random() * 0xffffff,
+							color: backendPlayer.color,
 							roughness: 1.0,
 							metalness: 0.0
 						} );

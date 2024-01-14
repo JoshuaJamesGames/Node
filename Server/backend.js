@@ -26,6 +26,7 @@ io.on('connection', (socket) =>{
   console.log('A Player has Connected');
   backendPlayers[socket.id] = {
     position:{},
+    color: Math.random() * 0xffffff,
     x: 0,
     y: 0,
     z: 0,
@@ -98,6 +99,10 @@ io.on('connection', (socket) =>{
   socket.on('playerPosition',(player)=>{
     backendPlayers[socket.id].position = player.position;    
   });
+
+  socket.on('playerAttributeUpdate', (player)=>{
+    backendPlayers[socket.id].color = player.color;
+  })
 
   console.log(backendPlayers);
 });
