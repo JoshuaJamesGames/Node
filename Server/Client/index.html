@@ -56,6 +56,7 @@
 			let controller1, controller2;
 			let controllerGrip1, controllerGrip2;
 
+
 			const tmpVector1 = new THREE.Vector3();
 			const tmpVector2 = new THREE.Vector3();
 
@@ -67,6 +68,12 @@
 				initialDistance: 0,
 				object: null,
 				initialScale: 1
+			};
+
+			//Squeeze data
+			const rightHandSqueeze = {
+					squeezing : false,
+					position : new THREE.Vector3()
 			};
 
 			//Array for collision checking
@@ -81,9 +88,7 @@
 					const backendPlayer = backendPlayers[id];
 					if(!clientPlayers[id]){
 						clientPlayers[id] = {
-							x: backendPlayer.x,
-							y: backendPlayer.y,
-							z: backendPlayer.z
+							position: new THREE.Vector3(backendPlayer.x,backendPlayer.y,backendPlayer.z)							 
 						}
 						const headSize = 0.1;
 						const widthSegments = 6;
@@ -147,7 +152,8 @@
 					
 					//Scene needs to load
 					if(scene){
-						const playerHead = scene.getObjectByProperty('name', id);					
+						const playerHead = scene.getObjectByProperty('name', id);
+						//Hide your own head					
 						if(id == socket.id){
 							playerHead.visible = false;
 						}
@@ -157,41 +163,41 @@
 							playerHead.quaternion.copy(backendPlayers[id].head.quaternion);
 							playerHead.rotation.copy(backendPlayers[id].head.rotation);
 
-							
-							//console.log(backendPlayers[id].leftHand.position);
-
+							//Update left hand joints
 							let leftHandWrist = scene.getObjectByName(id+'leftHandWrist');
-							
+							leftHandWrist.position.copy(backendPlayers[id].position);							
 							if(backendPlayers[id].leftHand.visible){
 								leftHandWrist.visible=true;
 								dummy.quaternion.copy(backendPlayers[id].leftHand.quaternion);
 								dummy.rotation.copy(backendPlayers[id].leftHand.rotation);
 								
-								for(let i = 0; i < backendPlayers[id].leftHand.positions.length; i++){
+								for(let i = 0; i < backendPlayers[id].leftHand.positions.length; i++){									
 									dummy.scale.setScalar(1-((i%5)*.1));
 									dummy.position.copy(backendPlayers[id].leftHand.positions[i]);
 									dummy.updateMatrix();									
 									leftHandWrist.setMatrixAt(i, dummy.matrix);
-								}								
+								}							
 								
 								leftHandWrist.instanceMatrix.needsUpdate = true;
 							}else{
 								leftHandWrist.visible=false;
 							}
+
+							//Update right hand joints
 							let rightHandWrist = scene.getObjectByName(id+'rightHandWrist');
+							rightHandWrist.position.copy(backendPlayers[id].position);
 							if(backendPlayers[id].rightHand.visible){
 								rightHandWrist.visible=true;
 								dummy.quaternion.copy(backendPlayers[id].rightHand.quaternion);
 								dummy.rotation.copy(backendPlayers[id].rightHand.rotation);
 
-								for(let i = 0; i < backendPlayers[id].rightHand.positions.length; i++){
-									
+								for(let i = 0; i < backendPlayers[id].rightHand.positions.length; i++){									
 									dummy.scale.setScalar(1-((i%5)*.1));
 									dummy.position.copy(backendPlayers[id].rightHand.positions[i]);
 									dummy.updateMatrix();									
-									rightHandWrist.setMatrixAt(i, dummy.matrix);
-								
+									rightHandWrist.setMatrixAt(i, dummy.matrix);								
 								}
+
 								rightHandWrist.instanceMatrix.needsUpdate = true;								
 							}else{
 								rightHandWrist.visible=false;
@@ -257,7 +263,7 @@
 
 				camera = new THREE.PerspectiveCamera( 50, window.innerWidth / window.innerHeight, 0.1, 30 );
 				console.log(`Socket id:${socket.id} connected`);
-				camera.position.set( clientPlayers[socket.id].x, clientPlayers[socket.id].y, clientPlayers[socket.id].z );
+				camera.position.set( 0, 1.6, 6);
 
 				controls = new OrbitControls( camera, container );
 				controls.target.set( 0, 1.6, 0 );
@@ -297,9 +303,13 @@
 				// controllers
 
 				controller1 = renderer.xr.getController( 0 );
+				controller1.name = 'controller1';
+				controller1.matrixAutoUpdate = true
 				scene.add( controller1 );
 
 				controller2 = renderer.xr.getController( 1 );
+				controller2.name = 'controller2';
+				controller2.matrixAutoUpdate = true;
 				scene.add( controller2 );
 
 				const controllerModelFactory = new XRControllerModelFactory();
@@ -320,6 +330,7 @@
 				
 				hand1.add( handModelFactory.createHandModel( hand1 ) );
 				hand1.name = 'hand1';
+				hand1.matrixAutoUpdate = true;
 				scene.add( hand1 );
 
 				// Hand 2
@@ -333,8 +344,9 @@
 				hand2.addEventListener('squeezestart', onSqueezeStartRight);
 				hand2.addEventListener('squeezeend', onSqueezeEndRight);
 				hand2.add( handModelFactory.createHandModel( hand2 ) );
+				hand2.matrixAutoUpdate = true;
 				hand2.name = 'hand2';
-				scene.add( hand2 );
+				scene.add( hand2 );				
 
 				//
 
@@ -343,6 +355,7 @@
 				const line = new THREE.Line( geometry );
 				line.name = 'line';
 				line.scale.z = 5;
+				line.visible = false;
 
 				controller1.add( line.clone() );
 				controller2.add( line.clone() );
@@ -406,7 +419,8 @@
 				spawn.geometry.computeBoundingSphere();
 
 				const indexTip = controller.joints[ 'index-finger-tip' ];
-				spawn.position.copy( indexTip.position );
+				const tmpVector3 = new THREE.Vector3();
+				spawn.position.addVectors( indexTip.position, clientPlayers[socket.id].position );
 				spawn.quaternion.copy( indexTip.quaternion );
 
 				
@@ -483,12 +497,14 @@
 
 				scaling.active = false;
 
-			}
-
+			}			
+			
 			function onSqueezeStartRight( event ){
 				const controller = event.target;
 				const rightHand = scene.getObjectByProperty('name', socket.id+'rightHandWrist');
-				rightHand.material.emissive.b = 1;
+				rightHand.material.emissive.b = 1;				
+				rightHandSqueeze.position.copy(scene.getObjectByProperty('name', 'hand2').joints.wrist.position);
+				rightHandSqueeze.squeezing = true; 
 				
 				
 			}
@@ -497,6 +513,7 @@
 				const controller = event.target;
 				const rightHand = scene.getObjectByProperty('name', socket.id+'rightHandWrist');
 				rightHand.material.emissive.b = 0;
+				rightHandSqueeze.squeezing = false;
 				
 				
 			}
@@ -566,7 +583,10 @@
 								visible: false
 							}
 						});
-					}					
+					}
+					socket.emit('playerPosition',{
+						position: clientPlayers[socket.id].position						
+					});					
 				}	
 			}, 30);
 			
@@ -589,12 +609,40 @@
 					scaling.object.scale.setScalar( newScale );
 
 				}
+
+				//Movement with squeeze
+				if(rightHandSqueeze.squeezing){
+					const leftHand = scene.getObjectByProperty('name', 'hand1');
+					const leftController = scene.getObjectByProperty('name', 'controller1');
+					const rightHand = scene.getObjectByProperty('name', 'hand2');
+					const rightController = scene.getObjectByProperty('name', 'controller2');
+					
+					scene.translateX((rightHand.joints.wrist.position.x - rightHandSqueeze.position.x)/10);
+					scene.translateY((rightHand.joints.wrist.position.y - rightHandSqueeze.position.y)/10);
+					scene.translateZ((rightHand.joints.wrist.position.z - rightHandSqueeze.position.z)/10);
+					rightHandSqueeze.position.lerp(rightHand.joints.wrist.position, 0.1);
+					clientPlayers[socket.id].position.set(scene.position.x, scene.position.y, scene.position.z).negate();
+					//console.log(clientPlayers[socket.id].position);
+					//Move hands with player position - inverse of scene
+					let alpha = 0.5;
+					//leftHand.children[0].position.lerp(clientPlayers[socket.id].position, alpha);
+					leftHand.position.lerp(clientPlayers[socket.id].position, alpha);
+					//leftController.children[0].position.lerp(clientPlayers[socket.id].position, alpha);
+					//rightHand.children[0].position.lerp(clientPlayers[socket.id].position, alpha);
+					rightHand.position.lerp(clientPlayers[socket.id].position, alpha);
+					//rightController.position.lerp(clientPlayers[socket.id].position, alpha);
+					//rightController.visible = true;
+
+				}
+
 				//If an object is being moved, send the movement to the server
 				for(const id in objectsToUpdate){
 					const object = scene.getObjectByProperty('uuid', id);
+					const worldPosition = new THREE.Vector3();
+					worldPosition.addVectors(object.parent.position, clientPlayers[socket.id].position);
 					socket.emit('clientUpdateObject', {
 						uuid: object.uuid,
-						position: object.parent.position,
+						position: worldPosition,
 						quaternion: object.parent.quaternion,
 						rotation: object.parent.rotation,
 						scale: object.scale

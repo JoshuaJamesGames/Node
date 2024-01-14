@@ -25,9 +25,10 @@ const backendObjects = {};
 io.on('connection', (socket) =>{
   console.log('A Player has Connected');
   backendPlayers[socket.id] = {
-    x: (floorSize*2 * Math.random())-floorSize,
-    y: 1.6,
-    z: (floorSize*2 * Math.random())-floorSize,
+    position:{},
+    x: 0,
+    y: 0,
+    z: 0,
     head:{
       position:{},
       quaternion:{},
@@ -92,6 +93,10 @@ io.on('connection', (socket) =>{
     //console.log(hands);
     backendPlayers[socket.id].leftHand = hands.leftHand;
     backendPlayers[socket.id].rightHand = hands.rightHand;
+  });
+
+  socket.on('playerPosition',(player)=>{
+    backendPlayers[socket.id].position = player.position;    
   });
 
   console.log(backendPlayers);
