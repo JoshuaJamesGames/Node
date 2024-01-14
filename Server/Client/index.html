@@ -159,7 +159,7 @@
 						}
 						//This might be empty if the scene hasn't loaded before updates roll in
 						if(playerHead){
-							playerHead.position.copy(backendPlayers[id].head.position);
+							playerHead.position.addVectors(backendPlayers[id].head.position, backendPlayers[id].position);
 							playerHead.quaternion.copy(backendPlayers[id].head.quaternion);
 							playerHead.rotation.copy(backendPlayers[id].head.rotation);
 
