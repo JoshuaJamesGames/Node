@@ -73,7 +73,9 @@
 			//Squeeze data
 			const rightHandSqueeze = {
 					squeezing : false,
-					position : new THREE.Vector3()
+					position : new THREE.Vector3(),
+					rotation : new THREE.Euler()
+
 			};
 
 			//Array for collision checking
@@ -304,13 +306,11 @@
 				// controllers
 
 				controller1 = renderer.xr.getController( 0 );
-				controller1.name = 'controller1';
-				controller1.matrixAutoUpdate = true
+				controller1.name = 'controller1';				
 				scene.add( controller1 );
 
 				controller2 = renderer.xr.getController( 1 );
-				controller2.name = 'controller2';
-				controller2.matrixAutoUpdate = true;
+				controller2.name = 'controller2';				
 				scene.add( controller2 );
 
 				const controllerModelFactory = new XRControllerModelFactory();
@@ -505,6 +505,7 @@
 				const rightHand = scene.getObjectByProperty('name', socket.id+'rightHandWrist');
 				rightHand.material.emissive.b = 1;				
 				rightHandSqueeze.position.copy(scene.getObjectByProperty('name', 'hand2').joints.wrist.position);
+				rightHandSqueeze.rotation.copy(scene.getObjectByProperty('name', 'hand2').joints.wrist.rotation);
 				rightHandSqueeze.squeezing = true; 
 				
 				
@@ -618,21 +619,26 @@
 					const rightHand = scene.getObjectByProperty('name', 'hand2');
 					const rightController = scene.getObjectByProperty('name', 'controller2');
 					
-					scene.translateX((rightHand.joints.wrist.position.x - rightHandSqueeze.position.x)/10);
-					scene.translateY((rightHand.joints.wrist.position.y - rightHandSqueeze.position.y)/10);
-					scene.translateZ((rightHand.joints.wrist.position.z - rightHandSqueeze.position.z)/10);
-					rightHandSqueeze.position.lerp(rightHand.joints.wrist.position, 0.1);
+					scene.translateX((rightHandSqueeze.position.x - rightHand.joints.wrist.position.x)/10);
+					scene.translateY((rightHandSqueeze.position.y - rightHand.joints.wrist.position.y)/10);
+					scene.translateZ((rightHandSqueeze.position.z - rightHand.joints.wrist.position.z)/10);
+
 					clientPlayers[socket.id].position.set(scene.position.x, scene.position.y, scene.position.z).negate();
-					//console.log(clientPlayers[socket.id].position);
+
+					//const playerDistanceFromOrigin = new THREE.Vector3(0,0,0).distanceTo(clientPlayers[socket.id].position);
+					//Rotate around a point.  R*(P−C)+C
+					scene.position.sub(clientPlayers[socket.id].position);
+					scene.rotateY((rightHandSqueeze.rotation._y - rightHand.joints.wrist.rotation._y)/10);
+					scene.position.add(clientPlayers[socket.id].position);
+					//If you want world-grip movement uncomment this and use (rightHand.joints.wrist.position.x - rightHandSqueeze.position.x) for above translations
+					//rightHandSqueeze.position.lerp(rightHand.joints.wrist.position, 0.1);
+					
+
+										
 					//Move hands with player position - inverse of scene
-					let alpha = 0.5;
-					//leftHand.children[0].position.lerp(clientPlayers[socket.id].position, alpha);
-					leftHand.position.lerp(clientPlayers[socket.id].position, alpha);
-					//leftController.children[0].position.lerp(clientPlayers[socket.id].position, alpha);
-					//rightHand.children[0].position.lerp(clientPlayers[socket.id].position, alpha);
-					rightHand.position.lerp(clientPlayers[socket.id].position, alpha);
-					//rightController.position.lerp(clientPlayers[socket.id].position, alpha);
-					//rightController.visible = true;
+					let alpha = 0.5;					
+					leftHand.position.lerp(clientPlayers[socket.id].position, alpha);					
+					rightHand.position.lerp(clientPlayers[socket.id].position, alpha);					
 
 				}
 
