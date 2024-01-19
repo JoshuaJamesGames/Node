@@ -45,6 +45,12 @@
 			setInterval(()=>{
 				
 				console.log(scene);
+				/* My quest to find where to offset the xr position
+				console.log(renderer.xr);
+				console.log(renderer.xr.getSession());
+				console.log(renderer.xr.getReferenceSpace().getOffsetReferenceSpace('local'));				
+				console.log(renderer.xr.getCamera());
+				*/
 
 			},30000);
 
@@ -52,6 +58,7 @@
 
 			let container;
 			let camera, scene, renderer;
+			let player;
 			let hand1, hand2;
 			let controller1, controller2;
 			let controllerGrip1, controllerGrip2;
@@ -303,15 +310,19 @@
 
 				document.body.appendChild( VRButton.createButton( renderer ) );
 
-				// controllers
+				// player & controllers
+				player = new THREE.Object3D();
+				scene.add(player);
+				//const cameraXR = renderer.xr.getCamera();
+				player.add(camera);
 
 				controller1 = renderer.xr.getController( 0 );
 				controller1.name = 'controller1';				
-				scene.add( controller1 );
+				player.add( controller1 );
 
 				controller2 = renderer.xr.getController( 1 );
 				controller2.name = 'controller2';				
-				scene.add( controller2 );
+				player.add( controller2 );
 
 				const controllerModelFactory = new XRControllerModelFactory();
 				const handModelFactory = new XRHandModelFactory();
@@ -319,7 +330,7 @@
 				// Hand 1
 				controllerGrip1 = renderer.xr.getControllerGrip( 0 );
 				controllerGrip1.add( controllerModelFactory.createControllerModel( controllerGrip1 ) );
-				scene.add( controllerGrip1 );
+				player.add( controllerGrip1 );
 
 				hand1 = renderer.xr.getHand( 0 );
 				hand1.addEventListener( 'pinchstart', onPinchStartLeft );
@@ -332,12 +343,12 @@
 				hand1.add( handModelFactory.createHandModel( hand1 ) );
 				hand1.name = 'hand1';
 				hand1.matrixAutoUpdate = true;
-				scene.add( hand1 );
+				player.add( hand1 );
 
 				// Hand 2
 				controllerGrip2 = renderer.xr.getControllerGrip( 1 );
 				controllerGrip2.add( controllerModelFactory.createControllerModel( controllerGrip2 ) );
-				scene.add( controllerGrip2 );
+				player.add( controllerGrip2 );
 
 				hand2 = renderer.xr.getHand( 1 );
 				hand2.addEventListener( 'pinchstart', onPinchStartRight );
@@ -347,7 +358,7 @@
 				hand2.add( handModelFactory.createHandModel( hand2 ) );
 				hand2.matrixAutoUpdate = true;
 				hand2.name = 'hand2';
-				scene.add( hand2 );				
+				player.add( hand2 );				
 
 				//
 
@@ -356,7 +367,7 @@
 				const line = new THREE.Line( geometry );
 				line.name = 'line';
 				line.scale.z = 5;
-				line.visible = false;
+				//line.visible = false;
 
 				controller1.add( line.clone() );
 				controller2.add( line.clone() );
@@ -613,33 +624,18 @@
 				}
 
 				//Movement with squeeze
-				if(rightHandSqueeze.squeezing){
-					const leftHand = scene.getObjectByProperty('name', 'hand1');
-					const leftController = scene.getObjectByProperty('name', 'controller1');
-					const rightHand = scene.getObjectByProperty('name', 'hand2');
-					const rightController = scene.getObjectByProperty('name', 'controller2');
+				if(rightHandSqueeze.squeezing){					
 					
-					scene.translateX((rightHandSqueeze.position.x - rightHand.joints.wrist.position.x)/10);
-					scene.translateY((rightHandSqueeze.position.y - rightHand.joints.wrist.position.y)/10);
-					scene.translateZ((rightHandSqueeze.position.z - rightHand.joints.wrist.position.z)/10);
-
-					clientPlayers[socket.id].position.set(scene.position.x, scene.position.y, scene.position.z).negate();
-
-					//const playerDistanceFromOrigin = new THREE.Vector3(0,0,0).distanceTo(clientPlayers[socket.id].position);
-					//Rotate around a point.  R*(P−C)+C
-					scene.position.sub(clientPlayers[socket.id].position);
-					scene.rotateY((rightHandSqueeze.rotation._y - rightHand.joints.wrist.rotation._y)/10);
-					scene.position.add(clientPlayers[socket.id].position);
-					//If you want world-grip movement uncomment this and use (rightHand.joints.wrist.position.x - rightHandSqueeze.position.x) for above translations
-					//rightHandSqueeze.position.lerp(rightHand.joints.wrist.position, 0.1);
+					const rightHand = scene.getObjectByProperty('name', 'hand2');					
 					
+					player.translateX((rightHand.joints.wrist.position.x -rightHandSqueeze.position.x)/10);
+					player.translateY((rightHand.joints.wrist.position.y -rightHandSqueeze.position.y)/10);
+					player.translateZ((rightHand.joints.wrist.position.z - rightHandSqueeze.position.z)/10);
 
-										
-					//Move hands with player position - inverse of scene
-					let alpha = 0.5;					
-					leftHand.position.lerp(clientPlayers[socket.id].position, alpha);					
-					rightHand.position.lerp(clientPlayers[socket.id].position, alpha);					
-
+					clientPlayers[socket.id].position.set(player.position.x, player.position.y, player.position.z);
+					
+					player.rotateY((rightHand.joints.wrist.rotation._y - rightHandSqueeze.rotation._y)/30);
+					
 				}
 
 				//If an object is being moved, send the movement to the server
