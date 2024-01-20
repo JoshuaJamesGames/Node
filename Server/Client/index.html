@@ -97,8 +97,9 @@
 					const backendPlayer = backendPlayers[id];
 					if(!clientPlayers[id]){
 						clientPlayers[id] = {
-							position: new THREE.Vector3(backendPlayer.x,backendPlayer.y,backendPlayer.z)							 
+							player: new THREE.Object3D(backendPlayer.x,backendPlayer.y,backendPlayer.z)							 
 						}
+						
 						const headSize = 0.1;
 						const widthSegments = 6;
 						const heightSegments = 6;
@@ -114,7 +115,7 @@
 						head.name = id;
 						head.geometry.computeBoundingSphere();
 						//Camera isn't ready yet so keep hidden	below floor					
-						head.position.copy(new THREE.Vector3(0,-2,0));	
+						head.position.copy(new THREE.Vector3(backendPlayers[id].head.position));	
 
 						//don't add to standard collision, but maybe later
 						//spheres.push( spawn );
@@ -132,19 +133,20 @@
 
 						//wait for scene to initialize
 						setTimeout(()=>{
-							scene.add( head );							
-							scene.add(leftHandMesh);							
-							scene.add(rightHandMesh);
+							clientPlayers[id].player.add( head );							
+							clientPlayers[id].player.add(leftHandMesh);							
+							clientPlayers[id].player.add(rightHandMesh);
+							scene.add(clientPlayers[id].player);
 						},1000);
 					}
 				}
 
 				for (const id in clientPlayers){
 					if (!backendPlayers[id]){
-						let leavingPlayer = scene.getObjectByProperty('name', id);
+						let leavingPlayer = clientPlayers[id].player;
 						scene.remove(leavingPlayer);
-						scene.remove(scene.getObjectByProperty('name', id+'leftHandWrist'));
-						scene.remove(scene.getObjectByProperty('name', id+'rightHandWrist'));
+						//scene.remove(scene.getObjectByProperty('name', id+'leftHandWrist'));
+						//scene.remove(scene.getObjectByProperty('name', id+'rightHandWrist'));
 						delete clientPlayers[id];
 						
 					}
@@ -162,6 +164,10 @@
 					
 					//Scene needs to load
 					if(scene){
+						if(id != socket.id){
+							clientPlayers[id].player.position.copy(backendPlayer.position);
+							clientPlayers[id].player.rotation.copy(backendPlayer.rotation);
+						}
 						const playerHead = scene.getObjectByProperty('name', id);
 						//Hide your own head					
 						if(id == socket.id){
@@ -169,17 +175,17 @@
 						}
 						//This might be empty if the scene hasn't loaded before updates roll in
 						if(playerHead){
-							playerHead.position.addVectors(backendPlayers[id].head.position, backendPlayers[id].position);
+							playerHead.position.copy(backendPlayers[id].head.position);
 							playerHead.quaternion.copy(backendPlayers[id].head.quaternion);
 							playerHead.rotation.copy(backendPlayers[id].head.rotation);
 
 							//Update left hand joints
 							let leftHandWrist = scene.getObjectByName(id+'leftHandWrist');
-							leftHandWrist.position.copy(backendPlayers[id].position);							
+							//leftHandWrist.position.copy(backendPlayers[id].position);							
 							if(backendPlayers[id].leftHand.visible){
 								leftHandWrist.visible=true;
 								dummy.quaternion.copy(backendPlayers[id].leftHand.quaternion);
-								dummy.rotation.copy(backendPlayers[id].leftHand.rotation);
+								dummy.rotation.copy(backendPlayers[id].rotation);
 								
 								for(let i = 0; i < backendPlayers[id].leftHand.positions.length; i++){									
 									dummy.scale.setScalar(1-((i%5)*.1));
@@ -195,11 +201,11 @@
 
 							//Update right hand joints
 							let rightHandWrist = scene.getObjectByName(id+'rightHandWrist');
-							rightHandWrist.position.copy(backendPlayers[id].position);
+							//rightHandWrist.position.copy(backendPlayers[id].position);
 							if(backendPlayers[id].rightHand.visible){
 								rightHandWrist.visible=true;
 								dummy.quaternion.copy(backendPlayers[id].rightHand.quaternion);
-								dummy.rotation.copy(backendPlayers[id].rightHand.rotation);
+								dummy.rotation.copy(backendPlayers[id].rotation);
 
 								for(let i = 0; i < backendPlayers[id].rightHand.positions.length; i++){									
 									dummy.scale.setScalar(1-((i%5)*.1));
@@ -311,18 +317,18 @@
 				document.body.appendChild( VRButton.createButton( renderer ) );
 
 				// player & controllers
-				player = new THREE.Object3D();
-				scene.add(player);
+				
+				scene.add(clientPlayers[socket.id].player);
 				//const cameraXR = renderer.xr.getCamera();
-				player.add(camera);
+				clientPlayers[socket.id].player.add(camera);
 
 				controller1 = renderer.xr.getController( 0 );
 				controller1.name = 'controller1';				
-				player.add( controller1 );
+				clientPlayers[socket.id].player.add( controller1 );
 
 				controller2 = renderer.xr.getController( 1 );
 				controller2.name = 'controller2';				
-				player.add( controller2 );
+				clientPlayers[socket.id].player.add( controller2 );
 
 				const controllerModelFactory = new XRControllerModelFactory();
 				const handModelFactory = new XRHandModelFactory();
@@ -330,7 +336,7 @@
 				// Hand 1
 				controllerGrip1 = renderer.xr.getControllerGrip( 0 );
 				controllerGrip1.add( controllerModelFactory.createControllerModel( controllerGrip1 ) );
-				player.add( controllerGrip1 );
+				clientPlayers[socket.id].player.add( controllerGrip1 );
 
 				hand1 = renderer.xr.getHand( 0 );
 				hand1.addEventListener( 'pinchstart', onPinchStartLeft );
@@ -343,12 +349,12 @@
 				hand1.add( handModelFactory.createHandModel( hand1 ) );
 				hand1.name = 'hand1';
 				hand1.matrixAutoUpdate = true;
-				player.add( hand1 );
+				clientPlayers[socket.id].player.add( hand1 );
 
 				// Hand 2
 				controllerGrip2 = renderer.xr.getControllerGrip( 1 );
 				controllerGrip2.add( controllerModelFactory.createControllerModel( controllerGrip2 ) );
-				player.add( controllerGrip2 );
+				clientPlayers[socket.id].player.add( controllerGrip2 );
 
 				hand2 = renderer.xr.getHand( 1 );
 				hand2.addEventListener( 'pinchstart', onPinchStartRight );
@@ -358,7 +364,7 @@
 				hand2.add( handModelFactory.createHandModel( hand2 ) );
 				hand2.matrixAutoUpdate = true;
 				hand2.name = 'hand2';
-				player.add( hand2 );				
+				clientPlayers[socket.id].player.add( hand2 );				
 
 				//
 
@@ -432,8 +438,10 @@
 
 				const indexTip = controller.joints[ 'index-finger-tip' ];
 				const tmpVector3 = new THREE.Vector3();
-				spawn.position.addVectors( indexTip.position, clientPlayers[socket.id].position );
+				indexTip.getWorldPosition(tmpVector3);
+				spawn.position.copy(tmpVector3);
 				spawn.quaternion.copy( indexTip.quaternion );
+				
 
 				
 				socket.emit('createObject', {
@@ -598,7 +606,8 @@
 						});
 					}
 					socket.emit('playerPosition',{
-						position: clientPlayers[socket.id].position						
+						position: clientPlayers[socket.id].player.position,
+						rotation: clientPlayers[socket.id].player.rotation						
 					});					
 				}	
 			}, 30);
@@ -628,13 +637,13 @@
 					
 					const rightHand = scene.getObjectByProperty('name', 'hand2');					
 					
-					player.translateX((rightHand.joints.wrist.position.x -rightHandSqueeze.position.x)/10);
-					player.translateY((rightHand.joints.wrist.position.y -rightHandSqueeze.position.y)/10);
-					player.translateZ((rightHand.joints.wrist.position.z - rightHandSqueeze.position.z)/10);
+					clientPlayers[socket.id].player.translateX((rightHand.joints.wrist.position.x -rightHandSqueeze.position.x)/10);
+					clientPlayers[socket.id].player.translateY((rightHand.joints.wrist.position.y -rightHandSqueeze.position.y)/10);
+					clientPlayers[socket.id].player.translateZ((rightHand.joints.wrist.position.z - rightHandSqueeze.position.z)/10);
 
-					clientPlayers[socket.id].position.set(player.position.x, player.position.y, player.position.z);
+					//clientPlayers[socket.id].player.position.set(player.position.x, player.position.y, player.position.z);
 					
-					player.rotateY((rightHand.joints.wrist.rotation._y - rightHandSqueeze.rotation._y)/30);
+					clientPlayers[socket.id].player.rotateY((rightHand.joints.wrist.rotation._y - rightHandSqueeze.rotation._y)/30);
 					
 				}
 
@@ -642,7 +651,7 @@
 				for(const id in objectsToUpdate){
 					const object = scene.getObjectByProperty('uuid', id);
 					const worldPosition = new THREE.Vector3();
-					worldPosition.addVectors(object.parent.position, clientPlayers[socket.id].position);
+					worldPosition.addVectors(object.parent.position, clientPlayers[socket.id].player.position);
 					socket.emit('clientUpdateObject', {
 						uuid: object.uuid,
 						position: worldPosition,
