@@ -651,7 +651,8 @@
 				for(const id in objectsToUpdate){
 					const object = scene.getObjectByProperty('uuid', id);
 					const worldPosition = new THREE.Vector3();
-					worldPosition.addVectors(object.parent.position, clientPlayers[socket.id].player.position);
+					//worldPosition.addVectors(object.parent.position, clientPlayers[socket.id].player.position);
+					object.parent.getWorldPosition(worldPosition);
 					socket.emit('clientUpdateObject', {
 						uuid: object.uuid,
 						position: worldPosition,
