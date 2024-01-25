@@ -31,6 +31,7 @@
 			import { VRButton } from 'three/addons/webxr/VRButton.js';
 			import { XRControllerModelFactory } from 'three/addons/webxr/XRControllerModelFactory.js';
 			import { XRHandModelFactory } from 'three/addons/webxr/XRHandModelFactory.js';
+			import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 
 			function sleep(ms) {
@@ -129,6 +130,10 @@
 						const rightHandMesh = new THREE.InstancedMesh( handSphereGeometry, rightHandMaterial, 25 );
 						rightHandMesh.name = id+'rightHandWrist';
 						rightHandMesh.frustumCulled = false;
+
+						const equipLoader = new GLTFLoader();
+						
+						
 						
 
 						//wait for scene to initialize
@@ -136,6 +141,13 @@
 							clientPlayers[id].player.add( head );							
 							clientPlayers[id].player.add(leftHandMesh);							
 							clientPlayers[id].player.add(rightHandMesh);
+							//Load client equipment
+							equipLoader.load('models/Tesseract.glb',(gltf)=>{
+								clientPlayers[id].player.add(gltf.scene);
+							},undefined, (error)=>{
+								console.error(error);
+							});
+							
 							scene.add(clientPlayers[id].player);
 						},1000);
 					}
@@ -145,8 +157,7 @@
 					if (!backendPlayers[id]){
 						let leavingPlayer = clientPlayers[id].player;
 						scene.remove(leavingPlayer);
-						//scene.remove(scene.getObjectByProperty('name', id+'leftHandWrist'));
-						//scene.remove(scene.getObjectByProperty('name', id+'rightHandWrist'));
+						
 						delete clientPlayers[id];
 						
 					}
