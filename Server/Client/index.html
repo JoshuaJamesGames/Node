@@ -143,11 +143,17 @@
 							clientPlayers[id].player.add(rightHandMesh);
 							//Load client equipment
 							equipLoader.load('models/Tesseract.glb',(gltf)=>{
-								clientPlayers[id].player.add(gltf.scene);
+								
+								let clientTesseract = gltf.scene.getObjectByName('Tesseract');
+								//clientTesseract.material.color = new THREE.Color(backendPlayer.color);
+								clientTesseract.material.emissive = new THREE.Color(backendPlayer.color);
+								clientTesseract.material.emissiveIntensity = .5;
+								clientTesseract.material.opacity = .75;
+								clientPlayers[id].player.add(clientTesseract);
+								//spheres.push(clientTesseract);
 							},undefined, (error)=>{
 								console.error(error);
-							});
-							
+							});							
 							scene.add(clientPlayers[id].player);
 						},1000);
 					}
@@ -178,6 +184,7 @@
 						if(id != socket.id){
 							clientPlayers[id].player.position.copy(backendPlayer.position);
 							clientPlayers[id].player.rotation.copy(backendPlayer.rotation);
+							clientPlayers[id].player.quaternion.copy(backendPlayer.quaternion);
 						}
 						const playerHead = scene.getObjectByProperty('name', id);
 						//Hide your own head					
@@ -618,7 +625,8 @@
 					}
 					socket.emit('playerPosition',{
 						position: clientPlayers[socket.id].player.position,
-						rotation: clientPlayers[socket.id].player.rotation						
+						rotation: clientPlayers[socket.id].player.rotation,
+						quaternion: clientPlayers[socket.id].player.quaternion 						
 					});					
 				}	
 			}, 30);

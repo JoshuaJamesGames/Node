@@ -27,6 +27,7 @@ io.on('connection', (socket) =>{
   backendPlayers[socket.id] = {
     position:{},
     rotation:{},
+    quaternion: {},
     color: Math.random() * 0xffffff,
     x: 0,
     y: 0,
@@ -99,7 +100,8 @@ io.on('connection', (socket) =>{
 
   socket.on('playerPosition',(player)=>{
     backendPlayers[socket.id].position = player.position;
-    backendPlayers[socket.id].rotation = player.rotation;    
+    backendPlayers[socket.id].rotation = player.rotation;
+    backendPlayers[socket.id].quaternion = player.quaternion;    
   });
 
   socket.on('playerAttributeUpdate', (player)=>{
