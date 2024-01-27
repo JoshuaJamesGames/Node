@@ -150,7 +150,17 @@
 								clientTesseract.material.emissiveIntensity = .5;
 								clientTesseract.material.opacity = .75;
 								clientPlayers[id].player.add(clientTesseract);
-								//spheres.push(clientTesseract);
+								spheres.push(clientTesseract);
+								socket.emit('createObject', {
+									uuid: clientTesseract.uuid,
+									color:  clientTesseract.material.color,
+									roughness:  clientTesseract.material.roughness,
+									metalness:  clientTesseract.material.metalness,
+									position: clientTesseract.position,
+									quaternion: clientTesseract.quaternion,
+									rotation: clientTesseract.rotation,
+									scale: clientTesseract.scale
+								});
 							},undefined, (error)=>{
 								console.error(error);
 							});							
@@ -162,6 +172,12 @@
 				for (const id in clientPlayers){
 					if (!backendPlayers[id]){
 						let leavingPlayer = clientPlayers[id].player;
+						//Remove equipment
+						let leavingPlayerTesseract = clientPlayers[id].player.getObjectByName('Tesseract');
+						console.log(`deleting ${leavingPlayerTesseract.uuid}`);
+						socket.emit('deleteObject', {
+							uuid: leavingPlayerTesseract.uuid
+						});
 						scene.remove(leavingPlayer);
 						
 						delete clientPlayers[id];
@@ -183,8 +199,7 @@
 					if(scene){
 						if(id != socket.id){
 							clientPlayers[id].player.position.copy(backendPlayer.position);
-							clientPlayers[id].player.rotation.copy(backendPlayer.rotation);
-							clientPlayers[id].player.quaternion.copy(backendPlayer.quaternion);
+							clientPlayers[id].player.rotation.copy(backendPlayer.rotation);							
 						}
 						const playerHead = scene.getObjectByProperty('name', id);
 						//Hide your own head					
@@ -193,16 +208,14 @@
 						}
 						//This might be empty if the scene hasn't loaded before updates roll in
 						if(playerHead){
-							playerHead.position.copy(backendPlayers[id].head.position);
-							playerHead.quaternion.copy(backendPlayers[id].head.quaternion);
+							playerHead.position.copy(backendPlayers[id].head.position);							
 							playerHead.rotation.copy(backendPlayers[id].head.rotation);
 
 							//Update left hand joints
-							let leftHandWrist = scene.getObjectByName(id+'leftHandWrist');
-							//leftHandWrist.position.copy(backendPlayers[id].position);							
+							let leftHandWrist = scene.getObjectByName(id+'leftHandWrist');													
 							if(backendPlayers[id].leftHand.visible){
 								leftHandWrist.visible=true;
-								dummy.quaternion.copy(backendPlayers[id].leftHand.quaternion);
+								//dummy.quaternion.copy(backendPlayers[id].leftHand.quaternion);
 								dummy.rotation.copy(backendPlayers[id].rotation);
 								
 								for(let i = 0; i < backendPlayers[id].leftHand.positions.length; i++){									
@@ -218,11 +231,10 @@
 							}
 
 							//Update right hand joints
-							let rightHandWrist = scene.getObjectByName(id+'rightHandWrist');
-							//rightHandWrist.position.copy(backendPlayers[id].position);
+							let rightHandWrist = scene.getObjectByName(id+'rightHandWrist');							
 							if(backendPlayers[id].rightHand.visible){
 								rightHandWrist.visible=true;
-								dummy.quaternion.copy(backendPlayers[id].rightHand.quaternion);
+								//dummy.quaternion.copy(backendPlayers[id].rightHand.quaternion);
 								dummy.rotation.copy(backendPlayers[id].rotation);
 
 								for(let i = 0; i < backendPlayers[id].rightHand.positions.length; i++){									
@@ -507,9 +519,9 @@
 
 					grabbing = true;
 					indexTip.attach( object );
-					object.material.emissive.b = 1;
+					//object.material.emissive.b = 1;
 					controller.userData.selected = object;
-					//console.log( 'Selected', object );
+					console.log( 'Selected', object );
 					objectsToUpdate[object.uuid]={};
 					//console.log(objectsToUpdate);
 
@@ -524,7 +536,7 @@
 				if ( controller.userData.selected !== undefined ) {
 
 					const object = controller.userData.selected;
-					object.material.emissive.b = 0;
+					//object.material.emissive.b = 0;
 					scene.attach( object );
 					delete objectsToUpdate[object.uuid];
 					//console.log(objectsToUpdate);
@@ -582,8 +594,7 @@
 						
 						head: {
 							position: camera.position,
-							rotation: camera.rotation,
-							quaternion: camera.quaternion
+							rotation: camera.rotation							
 						}
 
 					});
@@ -602,13 +613,11 @@
 							leftHand:{
 								visible: true,
 								positions: leftHandJointLocations,
-								quaternion: leftHand.joints.wrist.quaternion,
 								rotation: leftHand.joints.wrist.rotation
 							},
 							rightHand:{
 								visible: true,
 								positions: rightHandJointLocations,
-								quaternion: rightHand.joints.wrist.quaternion,
 								rotation: rightHand.joints.wrist.rotation
 							}
 						});
@@ -625,8 +634,7 @@
 					}
 					socket.emit('playerPosition',{
 						position: clientPlayers[socket.id].player.position,
-						rotation: clientPlayers[socket.id].player.rotation,
-						quaternion: clientPlayers[socket.id].player.quaternion 						
+						rotation: clientPlayers[socket.id].player.rotation						
 					});					
 				}	
 			}, 30);

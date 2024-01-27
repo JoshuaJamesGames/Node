@@ -27,14 +27,12 @@ io.on('connection', (socket) =>{
   backendPlayers[socket.id] = {
     position:{},
     rotation:{},
-    quaternion: {},
     color: Math.random() * 0xffffff,
     x: 0,
     y: 0,
     z: 0,
     head:{
       position:{},
-      quaternion:{},
       rotation:{}
     },
     leftHand:{
@@ -77,6 +75,11 @@ io.on('connection', (socket) =>{
     io.emit('createObjects', backendObjects);
   });
 
+  socket.on('deleteObject', (object) =>{
+    console.log('Remove Object');
+    delete backendObjects[object.uuid];
+  });
+
   socket.on('clientUpdateObject', (object) =>{
     //console.log(`updating ${object}`);
     backendObjects[object.uuid].position = object.position;
@@ -101,7 +104,7 @@ io.on('connection', (socket) =>{
   socket.on('playerPosition',(player)=>{
     backendPlayers[socket.id].position = player.position;
     backendPlayers[socket.id].rotation = player.rotation;
-    backendPlayers[socket.id].quaternion = player.quaternion;    
+        
   });
 
   socket.on('playerAttributeUpdate', (player)=>{
