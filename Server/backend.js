@@ -61,18 +61,18 @@ io.on('connection', (socket) =>{
     io.emit('updatePlayers', backendPlayers);
   });  
 
-  socket.on('createObject', (object) =>{
-    console.log('New object');
+  socket.on('createWorldObject', (object) =>{
+    console.log(`Adding ${object.uuid}`);
+    //Possible filtering or limiting here?
     backendObjects[object.uuid] = {
-      color: object.color,
-      roughness: object.roughness,
-      metalness: object.metalness,
+      object3d: object.object3d,
       position: object.position,
-      quaternion: object.quaternion,
       rotation: object.rotation,
-      scale: object.scale
-    };
-    io.emit('createObjects', backendObjects);
+      quaternion: object.quaternion
+    }
+    
+    console.log(backendObjects[object.uuid]);
+    io.emit('spawnWorldObject', backendObjects[object.uuid]);
   });
 
   socket.on('deleteObject', (object) =>{
