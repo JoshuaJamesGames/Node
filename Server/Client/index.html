@@ -151,16 +151,15 @@
 								clientTesseract.material.emissive = new THREE.Color(backendPlayer.color);
 								clientTesseract.material.emissiveIntensity = .5;
 								clientTesseract.material.opacity = .75;
-								clientPlayers[id].player.add(clientTesseract);
-								spheres.push(clientTesseract);
-								socket.emit('createObject', {
+								//clientPlayers[id].player.add(clientTesseract);
+								//spheres.push(clientTesseract);
+								
+								socket.emit('createWorldObject', {
 									uuid: clientTesseract.uuid,
-									color:  clientTesseract.material.color,
-									roughness:  clientTesseract.material.roughness,
-									metalness:  clientTesseract.material.metalness,
+									object3d: clientTesseract,
 									position: clientTesseract.position,
-									quaternion: clientTesseract.quaternion,
 									rotation: clientTesseract.rotation,
+									quaternion: clientTesseract.quaternion,
 									scale: clientTesseract.scale
 								});
 							},undefined, (error)=>{
@@ -489,13 +488,14 @@
 				spawn.quaternion.copy( indexTip.quaternion );
 				
 
-				console.log(spawn);
+				//console.log(spawn);
 				socket.emit('createWorldObject', {
 					uuid: spawn.uuid,
 					object3d: spawn,
 					position: spawn.position,
 					rotation: spawn.rotation,
-					quaternion: spawn.quaternion
+					quaternion: spawn.quaternion,
+					scale: spawn.scale
 				});								
 
 			}

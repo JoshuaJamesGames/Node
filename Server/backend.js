@@ -68,10 +68,11 @@ io.on('connection', (socket) =>{
       object3d: object.object3d,
       position: object.position,
       rotation: object.rotation,
-      quaternion: object.quaternion
+      quaternion: object.quaternion,
+      scale: object.scale
     }
     
-    console.log(backendObjects[object.uuid]);
+    //console.log(backendObjects[object.uuid]);
     io.emit('spawnWorldObject', backendObjects[object.uuid]);
   });
 
