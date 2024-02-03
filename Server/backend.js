@@ -31,20 +31,10 @@ io.on('connection', (socket) =>{
     x: 0,
     y: 0,
     z: 0,
-    head:{
-      position:{},
-      rotation:{}
-    },
-    leftHand:{
-      position:{},
-      quaternion:{},
-      rotation:{}
-    },
-    rightHand:{
-      position:{},
-      quaternion:{},
-      rotation:{}
-    }   
+    head:{},
+    leftHand:{},
+    rightHand:{},
+    inventory:{}   
   };
   
   //When a player connects
@@ -73,7 +63,22 @@ io.on('connection', (socket) =>{
     }
     
     //console.log(backendObjects[object.uuid]);
-    io.emit('spawnWorldObject', backendObjects[object.uuid]);
+    io.emit('spawnWorldObject', {uuid: object.uuid, object3d: backendObjects[object.uuid]});
+  });
+
+  socket.on('createPlayerObject', (object) =>{
+    console.log(`Adding ${object.uuid} to ${socket.id}`);
+    //Possible filtering or limiting here?
+    backendPlayers[socket.id].inventory[object.uuid] = {
+      object3d: object.object3d,
+      position: object.position,
+      rotation: object.rotation,
+      quaternion: object.quaternion,
+      scale: object.scale
+    }
+    
+    //console.log(backendObjects[object.uuid]);
+    io.emit('spawnPlayerObject', {player: socket.id, uuid: object.uuid, object3d: backendPlayers[socket.id].inventory[object.uuid]});
   });
 
   socket.on('deleteObject', (object) =>{

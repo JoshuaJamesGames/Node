@@ -115,7 +115,7 @@
 						} );
 				
 						const head = new THREE.Mesh( headGeometry, headMaterial );
-						head.name = id;
+						head.name = id + 'head';
 						head.geometry.computeBoundingSphere();
 						//Camera isn't ready yet so keep hidden	below floor					
 						head.position.copy(new THREE.Vector3(backendPlayers[id].head.position));	
@@ -151,10 +151,9 @@
 								clientTesseract.material.emissive = new THREE.Color(backendPlayer.color);
 								clientTesseract.material.emissiveIntensity = .5;
 								clientTesseract.material.opacity = .75;
-								//clientPlayers[id].player.add(clientTesseract);
-								//spheres.push(clientTesseract);
+								//clientTesseract.position = new THREE.Vector3(0.15, 0.8, -0.2);
 								
-								socket.emit('createWorldObject', {
+								socket.emit('createPlayerObject', {
 									uuid: clientTesseract.uuid,
 									object3d: clientTesseract,
 									position: clientTesseract.position,
@@ -164,7 +163,8 @@
 								});
 							},undefined, (error)=>{
 								console.error(error);
-							});							
+							});
+							clientPlayers[id].player.name = id;							
 							scene.add(clientPlayers[id].player);
 						},1000);
 					}
@@ -173,13 +173,7 @@
 				for (const id in clientPlayers){
 					if (!backendPlayers[id]){
 						let leavingPlayer = clientPlayers[id].player;
-						//Remove equipment
-						let leavingPlayerTesseract = clientPlayers[id].player.getObjectByName('Tesseract');
-						console.log(leavingPlayerTesseract);
-						console.log(`deleting ${leavingPlayerTesseract.uuid}`);
-						socket.emit('deleteObject', {
-							uuid: leavingPlayerTesseract.uuid
-						});
+												
 						scene.remove(leavingPlayer);
 						
 						delete clientPlayers[id];
@@ -203,7 +197,7 @@
 							clientPlayers[id].player.position.copy(backendPlayer.position);
 							clientPlayers[id].player.rotation.copy(backendPlayer.rotation);							
 						}
-						const playerHead = scene.getObjectByProperty('name', id);
+						const playerHead = scene.getObjectByProperty('name', id+'head');
 						//Hide your own head					
 						if(id == socket.id){
 							playerHead.visible = false;
@@ -217,7 +211,7 @@
 							let leftHandWrist = scene.getObjectByName(id+'leftHandWrist');													
 							if(backendPlayers[id].leftHand.visible){
 								leftHandWrist.visible=true;
-								//dummy.quaternion.copy(backendPlayers[id].leftHand.quaternion);
+								
 								dummy.rotation.copy(backendPlayers[id].rotation);
 								
 								for(let i = 0; i < backendPlayers[id].leftHand.positions.length; i++){									
@@ -236,7 +230,7 @@
 							let rightHandWrist = scene.getObjectByName(id+'rightHandWrist');							
 							if(backendPlayers[id].rightHand.visible){
 								rightHandWrist.visible=true;
-								//dummy.quaternion.copy(backendPlayers[id].rightHand.quaternion);
+								
 								dummy.rotation.copy(backendPlayers[id].rotation);
 
 								for(let i = 0; i < backendPlayers[id].rightHand.positions.length; i++){									
@@ -261,23 +255,7 @@
 					const newObject = scene.getObjectByProperty('uuid',id);
 					if(!newObject){
 						console.log(`adding ${id}`);
-						/*
-						const geometry = new THREE.BoxGeometry( SphereRadius, SphereRadius, SphereRadius );
-						const material = new THREE.MeshStandardMaterial( {
-							color: backendObjects[id].color,
-							roughness: backendObjects[id].roughness,
-							metalness: backendObjects[id].metalness
-						} );
-				
-						const spawn = new THREE.Mesh( geometry, material );
-						spawn.uuid = id;
-						spawn.geometry.computeBoundingSphere();
-
-						spawn.position.copy(backendObjects[id].position);
-						spawn.quaternion.copy(backendObjects[id].quaternion);
-						spawn.rotation.copy(backendObjects[id].rotation);
-						spawn.scale.copy(backendObjects[id].scale);
-						*/
+						
 						let newObject = loader.parse(backendObjects[id].object3d);
 						newObject.position.copy(backendObjects[id].position);
 						newObject.rotation.copy(backendObjects[id].rotation);
@@ -285,17 +263,28 @@
 						spheres.push( newObject );
 						scene.add( newObject );
 					}
-				} 
-								
-				//console.log(backendObjects);
+				}				
 				
 			});
+
 			socket.on('spawnWorldObject', (object)=>{
-				let newObject = loader.parse(object.object3d);
-				newObject.position.copy(object.position);
-				newObject.rotation.copy(object.rotation);
+				let newObject = loader.parse(object.object3d.object3d);
+				newObject.position.copy(object.object3d.position);
+				newObject.rotation.copy(object.object3d.rotation);
+				newObject.uuid = object.uuid;
 				spheres.push( newObject );
 				scene.add( newObject );
+			});
+			
+			socket.on('spawnPlayerObject', (object)=>{
+				if(socket.id == object.player){
+					let player = scene.getObjectByName(socket.id);
+					let newObject = loader.parse(object.object3d.object3d);
+					newObject.position.copy(new THREE.Vector3(0.15, 0.7, -0.3));
+					newObject.scale.setScalar(.5);
+					newObject.uuid = object.uuid;
+					player.add(newObject)
+				}
 			});
 
 			//To hold updates
@@ -530,7 +519,7 @@
 					indexTip.attach( object );
 					//object.material.emissive.b = 1;
 					controller.userData.selected = object;
-					console.log( 'Selected', object );
+					//console.log( 'Selected', object );
 					objectsToUpdate[object.uuid]={};
 					//console.log(objectsToUpdate);
 
@@ -677,8 +666,6 @@
 					clientPlayers[socket.id].player.translateY((rightHand.joints.wrist.position.y -rightHandSqueeze.position.y)/10);
 					clientPlayers[socket.id].player.translateZ((rightHand.joints.wrist.position.z - rightHandSqueeze.position.z)/10);
 
-					//clientPlayers[socket.id].player.position.set(player.position.x, player.position.y, player.position.z);
-					
 					clientPlayers[socket.id].player.rotateY((rightHand.joints.wrist.rotation._y - rightHandSqueeze.rotation._y)/30);
 					
 				}
@@ -687,7 +674,7 @@
 				for(const id in objectsToUpdate){
 					const object = scene.getObjectByProperty('uuid', id);
 					const worldPosition = new THREE.Vector3();
-					//worldPosition.addVectors(object.parent.position, clientPlayers[socket.id].player.position);
+					
 					object.parent.getWorldPosition(worldPosition);
 					socket.emit('clientUpdateObject', {
 						uuid: object.uuid,
