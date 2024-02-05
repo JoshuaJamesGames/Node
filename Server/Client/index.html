@@ -126,11 +126,11 @@
 						const handSphereGeometry = new THREE.SphereGeometry( handJointSize, widthSegments, heightSegments );
 						const leftHandMaterial = headMaterial.clone();
 						const leftHandMesh = new THREE.InstancedMesh( handSphereGeometry, leftHandMaterial, 25 );
-						leftHandMesh.name = id+'leftHandWrist';
+						leftHandMesh.name = id + 'leftHandWrist';
 						leftHandMesh.frustumCulled = false;
 						const rightHandMaterial = headMaterial.clone();
 						const rightHandMesh = new THREE.InstancedMesh( handSphereGeometry, rightHandMaterial, 25 );
-						rightHandMesh.name = id+'rightHandWrist';
+						rightHandMesh.name = id + 'rightHandWrist';
 						rightHandMesh.frustumCulled = false;
 
 						const equipLoader = new GLTFLoader();
@@ -153,14 +153,17 @@
 								clientTesseract.material.opacity = .75;
 								//clientTesseract.position = new THREE.Vector3(0.15, 0.8, -0.2);
 								
-								socket.emit('createPlayerObject', {
-									uuid: clientTesseract.uuid,
-									object3d: clientTesseract,
-									position: clientTesseract.position,
-									rotation: clientTesseract.rotation,
-									quaternion: clientTesseract.quaternion,
-									scale: clientTesseract.scale
-								});
+								if(socket.id == id){
+									socket.emit('createPlayerObject', {
+										uuid: clientTesseract.uuid,
+										object3d: clientTesseract,
+										position: clientTesseract.position,
+										rotation: clientTesseract.rotation,
+										quaternion: clientTesseract.quaternion,
+										scale: clientTesseract.scale
+									});
+								}
+								
 							},undefined, (error)=>{
 								console.error(error);
 							});
@@ -260,6 +263,7 @@
 						newObject.position.copy(backendObjects[id].position);
 						newObject.rotation.copy(backendObjects[id].rotation);
 						newObject.scale.copy(backendObjects[id].scale);
+						newObject.userData.isWorldObject = true;
 						spheres.push( newObject );
 						scene.add( newObject );
 					}
@@ -272,19 +276,20 @@
 				newObject.position.copy(object.object3d.position);
 				newObject.rotation.copy(object.object3d.rotation);
 				newObject.uuid = object.uuid;
+				newObject.userData.isWorldObject = true;
 				spheres.push( newObject );
 				scene.add( newObject );
 			});
 			
 			socket.on('spawnPlayerObject', (object)=>{
-				if(socket.id == object.player){
-					let player = scene.getObjectByName(socket.id);
-					let newObject = loader.parse(object.object3d.object3d);
-					newObject.position.copy(new THREE.Vector3(0.15, 0.7, -0.3));
-					newObject.scale.setScalar(.5);
-					newObject.uuid = object.uuid;
-					player.add(newObject)
-				}
+				
+				let player = scene.getObjectByName(object.playerId);
+				let newObject = loader.parse(object.object3d.object3d);
+				newObject.position.copy(new THREE.Vector3(0.15, 0.7, -0.3));
+				newObject.scale.setScalar(.5);
+				newObject.uuid = object.uuid;
+				player.add(newObject)
+				
 			});
 
 			//To hold updates

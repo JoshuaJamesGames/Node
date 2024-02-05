@@ -78,7 +78,7 @@ io.on('connection', (socket) =>{
     }
     
     //console.log(backendObjects[object.uuid]);
-    io.emit('spawnPlayerObject', {player: socket.id, uuid: object.uuid, object3d: backendPlayers[socket.id].inventory[object.uuid]});
+    io.emit('spawnPlayerObject', {playerId: socket.id, uuid: object.uuid, object3d: backendPlayers[socket.id].inventory[object.uuid]});
   });
 
   socket.on('deleteObject', (object) =>{
@@ -117,7 +117,7 @@ io.on('connection', (socket) =>{
     backendPlayers[socket.id].color = player.color;
   })
 
-  console.log(backendPlayers);
+  //console.log(backendPlayers);
 });
 
 setInterval(()=>{
