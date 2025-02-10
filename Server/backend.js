@@ -7,11 +7,12 @@ const options = {
   key:fs.readFileSync(__dirname + '/certs/key.pem'),
   cert:fs.readFileSync(__dirname + '/certs/cert.pem')
 }
+const port = 8443;
 const server = https.createServer(options, app);
 const {Server} = require('socket.io');
 const io = new Server(server);
-const port = 5500;
-const hostname = '127.0.0.1';
+
+const hostname = 'joshuajamesgames.net';
 
 app.use(express.static('Client'));
 
