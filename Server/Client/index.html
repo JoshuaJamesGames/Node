@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 	<head>
-		<title>three.js vr - handinput - cubes</title>
+		<title>vr - handinput - cubes</title>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 		<link type="text/css" rel="stylesheet" href="main.css">
@@ -9,7 +9,7 @@
 	<body>
 
 		<div id="info">
-			<a href="https://threejs.org" target="_blank" rel="noopener">three.js</a> vr - multiplayer handinput - cubes<br/>			
+			vr - multiplayer handinput - cubes<br/>			
 		</div>
 
 		<script type="importmap">
@@ -89,7 +89,7 @@
 			};
 
 			//Array for collision checking
-			const spheres = [];
+			const collideObjects = [];
 
 			//Current connected clients
 			const clientPlayers = {};
@@ -121,7 +121,7 @@
 						head.position.copy(new THREE.Vector3(backendPlayers[id].head.position));	
 
 						//don't add to standard collision, but maybe later
-						//spheres.push( spawn );
+						//collideObjects.push( spawn );
 						const handJointSize = .015;
 						const handSphereGeometry = new THREE.SphereGeometry( handJointSize, widthSegments, heightSegments );
 						const leftHandMaterial = headMaterial.clone();
@@ -206,7 +206,7 @@
 							playerHead.visible = false;
 						}
 						//This might be empty if the scene hasn't loaded before updates roll in
-						if(playerHead){
+						if(playerHead && id != socket.id){
 							playerHead.position.copy(backendPlayers[id].head.position);							
 							playerHead.rotation.copy(backendPlayers[id].head.rotation);
 
@@ -264,7 +264,7 @@
 						newObject.rotation.copy(backendObjects[id].rotation);
 						newObject.scale.copy(backendObjects[id].scale);
 						newObject.userData.isWorldObject = true;
-						spheres.push( newObject );
+						collideObjects.push( newObject );
 						scene.add( newObject );
 					}
 				}				
@@ -277,7 +277,7 @@
 				newObject.rotation.copy(object.object3d.rotation);
 				newObject.uuid = object.uuid;
 				newObject.userData.isWorldObject = true;
-				spheres.push( newObject );
+				collideObjects.push( newObject );
 				scene.add( newObject );
 			});
 			
@@ -329,6 +329,9 @@
 				floor.rotation.x = - Math.PI / 2;
 				floor.receiveShadow = true;
 				scene.add( floor );
+
+				const screenGeometry = new THREE.PlaneGeometry(2,2);
+				
 
 				scene.add( new THREE.HemisphereLight( 0xbcbcbc, 0xa5a5a5, 3 ) );
 
@@ -443,17 +446,17 @@
 				if ( grabbing ) {
 
 					const indexTip = controller.joints[ 'index-finger-tip' ];
-					const sphere = collideObject( indexTip );
+					const touchable = collideObject( indexTip );
 
-					if ( sphere ) {
+					if ( touchable ) {
 
-						const sphere2 = hand2.userData.selected;
-						//console.log( 'sphere1', sphere, 'sphere2', sphere2 );
-						if ( sphere === sphere2 ) {
+						const pinchedObject = hand2.userData.selected;
+						
+						if ( touchable === pinchedObject ) {
 
 							scaling.active = true;
-							scaling.object = sphere;
-							scaling.initialScale = sphere.scale.x;
+							scaling.object = touchable;
+							scaling.initialScale = touchable.scale.x;
 							scaling.initialDistance = indexTip.position.distanceTo( hand2.joints[ 'index-finger-tip' ].position );
 							return;
 
@@ -496,14 +499,14 @@
 
 			function collideObject( indexTip ) {
 
-				for ( let i = 0; i < spheres.length; i ++ ) {
+				for ( let i = 0; i < collideObjects.length; i ++ ) {
 
-					const sphere = spheres[ i ];
-					const distance = indexTip.getWorldPosition( tmpVector1 ).distanceTo( sphere.getWorldPosition( tmpVector2 ) );
+					const touchable = collideObjects[ i ];
+					const distance = indexTip.getWorldPosition( tmpVector1 ).distanceTo( touchable.getWorldPosition( tmpVector2 ) );
 
-					if ( distance < sphere.geometry.boundingSphere.radius * sphere.scale.x ) {
+					if ( distance < touchable.geometry.boundingSphere.radius * touchable.scale.x ) {
 
-						return sphere;
+						return touchable;
 
 					}
 
