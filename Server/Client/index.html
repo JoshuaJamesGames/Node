@@ -143,6 +143,7 @@
 							clientPlayers[id].player.add( head );							
 							clientPlayers[id].player.add(leftHandMesh);							
 							clientPlayers[id].player.add(rightHandMesh);
+							clientPlayers[id].color = backendPlayers[id].color;
 							//Load client equipment
 							equipLoader.load('models/Tesseract.glb',(gltf)=>{
 								
@@ -201,6 +202,7 @@
 							clientPlayers[id].player.rotation.copy(backendPlayer.rotation);							
 						}
 						const playerHead = scene.getObjectByProperty('name', id+'head');
+						
 						//Hide your own head					
 						if(id == socket.id){
 							playerHead.visible = false;
@@ -389,7 +391,7 @@
 				
 				hand1.add( handModelFactory.createHandModel( hand1 ) );
 				hand1.name = 'hand1';
-				hand1.matrixAutoUpdate = true;
+				hand1.matrixAutoUpdate = true;				
 				clientPlayers[socket.id].player.add( hand1 );
 
 				// Hand 2
@@ -402,7 +404,7 @@
 				hand2.addEventListener( 'pinchend', onPinchEndRight );
 				hand2.addEventListener('squeezestart', onSqueezeStartRight);
 				hand2.addEventListener('squeezeend', onSqueezeEndRight);
-				hand2.add( handModelFactory.createHandModel( hand2 ) );
+				hand2.add( handModelFactory.createHandModel( hand2 ) );				
 				hand2.matrixAutoUpdate = true;
 				hand2.name = 'hand2';
 				clientPlayers[socket.id].player.add( hand2 );				
@@ -438,7 +440,7 @@
 
 			}
 
-			const SphereRadius = 0.05;
+			const cubeSize = 0.05;
 			function onPinchStartLeft( event ) {
 
 				const controller = event.target;
@@ -467,7 +469,7 @@
 				}
 
 				
-				const geometry = new THREE.BoxGeometry( SphereRadius, SphereRadius, SphereRadius );
+				const geometry = new THREE.BoxGeometry( cubeSize, cubeSize, cubeSize );
 				const material = new THREE.MeshStandardMaterial( {
 					color: Math.random() * 0xffffff,
 					roughness: 1.0,
