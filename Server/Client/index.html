@@ -202,10 +202,13 @@
 							clientPlayers[id].player.rotation.copy(backendPlayer.rotation);							
 						}
 						const playerHead = scene.getObjectByProperty('name', id+'head');
-						
-						//Hide your own head					
+						const leftHandWrist = scene.getObjectByName(id+'leftHandWrist');
+						const rightHandWrist = scene.getObjectByName(id+'rightHandWrist');
+						//Hide your own head & hands					
 						if(id == socket.id){
 							playerHead.visible = false;
+							leftHandWrist.visible = false;
+							rightHandWrist.visible = false;
 						}
 						//This might be empty if the scene hasn't loaded before updates roll in
 						if(playerHead && id != socket.id){
@@ -213,7 +216,7 @@
 							playerHead.rotation.copy(backendPlayers[id].head.rotation);
 
 							//Update left hand joints
-							let leftHandWrist = scene.getObjectByName(id+'leftHandWrist');													
+																				
 							if(backendPlayers[id].leftHand.visible){
 								leftHandWrist.visible=true;
 								
@@ -232,7 +235,7 @@
 							}
 
 							//Update right hand joints
-							let rightHandWrist = scene.getObjectByName(id+'rightHandWrist');							
+														
 							if(backendPlayers[id].rightHand.visible){
 								rightHandWrist.visible=true;
 								
