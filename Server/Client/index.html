@@ -600,25 +600,45 @@
 			}
 			
 			function onPointStartRight(event){
+
 				const controller = event.target;
+				const geometry = new THREE.BufferGeometry().setFromPoints( [ new THREE.Vector3( 0, 0, 0 ), new THREE.Vector3( 0, 0, - 1 ) ] );
+				const line = new THREE.Line( geometry );
+				line.name = 'line';
+				line.scale.z = 5;
+				hand2.joints['index-finger-tip'].add(line);
+
 				controller2.children[0].visible = false;
 				
 				
 			}
 
 			function onPointEndRight(event){
+
 				const controller = event.target;
+				const pointerLine = hand2.joints['index-finger-tip'].getObjectByName('line');
+				hand2.joints['index-finger-tip'].remove(pointerLine);
 				controller2.children[0].visible = true;
 				
 
 			}
 
 			function onPointStartLeft(event){
+
+				const geometry = new THREE.BufferGeometry().setFromPoints( [ new THREE.Vector3( 0, 0, 0 ), new THREE.Vector3( 0, 0, - 1 ) ] );
+				const line = new THREE.Line( geometry );
+				line.name = 'line';
+				line.scale.z = 5;
+				hand1.joints['index-finger-tip'].add(line);
+
 				controller1.children[0].visible = false;
 				
 			}
 
 			function onPointEndLeft(event){
+				
+				const pointerLine = hand2.joints['index-finger-tip'].getObjectByName('line');
+				hand1.joints['index-finger-tip'].remove(pointerLine);
 				controller1.children[0].visible = true;
 				
 			}
