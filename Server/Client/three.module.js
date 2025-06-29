@@ -26370,6 +26370,8 @@ class WebXRController {
 
 			this._hand.joints = {};
 			this._hand.inputState = { pinching: false };
+			this._hand.inputState = { squeezing: false };
+			this._hand.inputState = { pointing: false };
 
 		}
 
@@ -26583,6 +26585,31 @@ class WebXRController {
 					hand.inputState.squeezing = true;
 					this.dispatchEvent( {
 						type: 'squeezestart',
+						handedness: inputSource.handedness,
+						target: this
+					} );
+
+				}
+
+				//point, pointstart, &pointend
+				const pointDistance = squeezeCenter.distanceTo(indexTip.position);
+				const minimumPointDistance = 0.1;
+				const pointThreshold = 0.005;
+
+				if ( hand.inputState.pointing && pointDistance <= minimumPointDistance ) {
+
+					hand.inputState.pointing = false;
+					this.dispatchEvent( {
+						type: 'pointend',
+						handedness: inputSource.handedness,
+						target: this
+					} );
+
+				} else if ( ! hand.inputState.pointing && pointDistance > minimumPointDistance ) {
+
+					hand.inputState.pointing = true;
+					this.dispatchEvent( {
+						type: 'pointstart',
 						handedness: inputSource.handedness,
 						target: this
 					} );

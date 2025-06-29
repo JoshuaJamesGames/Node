@@ -31,29 +31,7 @@
 			import { VRButton } from 'three/addons/webxr/VRButton.js';
 			import { XRControllerModelFactory } from 'three/addons/webxr/XRControllerModelFactory.js';
 			import { XRHandModelFactory } from 'three/addons/webxr/XRHandModelFactory.js';
-			import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-
-
-			function sleep(ms) {
-  				return new Promise(resolve => setTimeout(resolve, ms));
-			}
-
-			//Delay while socket connects to server before loading index
-			sleep(500).then(init)
-			.then(animate);
-
-			//For debugging - hard to wear a headset and view components
-			setInterval(()=>{
-				
-				console.log(scene);
-				/* My quest to find where to offset the xr position
-				console.log(renderer.xr);
-				console.log(renderer.xr.getSession());
-				console.log(renderer.xr.getReferenceSpace().getOffsetReferenceSpace('local'));				
-				console.log(renderer.xr.getCamera());
-				*/
-
-			},30000);
+			import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';			
 
 			const socket = io.connect('https://joshuajamesgames.net');
 
@@ -93,6 +71,27 @@
 
 			//Current connected clients
 			const clientPlayers = {};
+
+			function sleep(ms) {
+  				return new Promise(resolve => setTimeout(resolve, ms));
+			}
+
+			//Delay while socket connects to server before loading index
+			sleep(500).then(init)
+			.then(animate);
+
+			//For debugging - hard to wear a headset and view components
+			setInterval(()=>{
+				
+				console.log(scene);
+				/* My quest to find where to offset the xr position
+				console.log(renderer.xr);
+				console.log(renderer.xr.getSession());
+				console.log(renderer.xr.getReferenceSpace().getOffsetReferenceSpace('local'));				
+				console.log(renderer.xr.getCamera());
+				*/
+
+			},30000);
 
 			socket.on('updatePlayers', (backendPlayers)=> {
 				
@@ -391,6 +390,8 @@
 				} );
 				hand1.addEventListener('squeezestart', onSqueezeStartLeft);
 				hand1.addEventListener('squeezeend', onSqueezeEndLeft);
+				hand1.addEventListener('pointstart', onPointStartLeft);
+				hand1.addEventListener('pointend', onPointEndLeft);
 				
 				hand1.add( handModelFactory.createHandModel( hand1 ) );
 				hand1.name = 'hand1';
@@ -407,6 +408,8 @@
 				hand2.addEventListener( 'pinchend', onPinchEndRight );
 				hand2.addEventListener('squeezestart', onSqueezeStartRight);
 				hand2.addEventListener('squeezeend', onSqueezeEndRight);
+				hand2.addEventListener('pointstart', onPointStartRight);
+				hand2.addEventListener('pointend', onPointEndRight);
 				hand2.add( handModelFactory.createHandModel( hand2 ) );				
 				hand2.matrixAutoUpdate = true;
 				hand2.name = 'hand2';
@@ -423,10 +426,9 @@
 
 				controller1.add( line.clone() );
 				controller2.add( line.clone() );
-
-				//
-				
-				
+				console.log(hand1);
+				//controller1.joints['index-finger-tip'].add( line.clone() );
+				//controller2.joints['index-finger-tip'].add( line.clone() );
 
 				window.addEventListener( 'resize', onWindowResize );
 
@@ -566,7 +568,8 @@
 				rightHand.material.emissive.b = 1;				
 				rightHandSqueeze.position.copy(scene.getObjectByProperty('name', 'hand2').joints.wrist.position);
 				rightHandSqueeze.rotation.copy(scene.getObjectByProperty('name', 'hand2').joints.wrist.rotation);
-				rightHandSqueeze.squeezing = true; 
+				rightHandSqueeze.squeezing = true;
+				
 				
 				
 			}
@@ -594,7 +597,32 @@
 				leftHand.material.emissive.b = 0;
 				
 				
-			}		
+			}
+			
+			function onPointStartRight(event){
+				const controller = event.target;
+				controller2.children[0].visible = false;
+				
+				
+			}
+
+			function onPointEndRight(event){
+				const controller = event.target;
+				controller2.children[0].visible = true;
+				
+
+			}
+
+			function onPointStartLeft(event){
+				controller1.children[0].visible = false;
+				
+			}
+
+			function onPointEndLeft(event){
+				controller1.children[0].visible = true;
+				
+			}
+				
 
 
 			//Update client personal position on interval
