@@ -26593,7 +26593,7 @@ class WebXRController {
 
 				//point, pointstart, &pointend
 				const pointDistance = squeezeCenter.distanceTo(indexTip.position);
-				const minimumPointDistance = 0.1;
+				const minimumPointDistance = 0.075;
 				const pointThreshold = 0.005;
 
 				if ( hand.inputState.pointing && pointDistance <= minimumPointDistance ) {

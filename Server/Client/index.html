@@ -637,7 +637,7 @@
 
 			function onPointEndLeft(event){
 				
-				const pointerLine = hand2.joints['index-finger-tip'].getObjectByName('line');
+				const pointerLine = hand1.joints['index-finger-tip'].getObjectByName('line');
 				hand1.joints['index-finger-tip'].remove(pointerLine);
 				controller1.children[0].visible = true;
 				
