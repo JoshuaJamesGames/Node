@@ -26530,8 +26530,8 @@ class WebXRController {
 				// Custom events
 
 				// Check pinchz
-				const indexTip = hand.joints[ 'index-finger-tip' ];
-				const thumbTip = hand.joints[ 'thumb-tip' ];
+				const indexTip = hand.joints[ 'index-finger-tip'];
+				const thumbTip = hand.joints[ 'thumb-tip'];
 				const distance = indexTip.position.distanceTo( thumbTip.position );
 
 				const distanceToPinch = 0.02;
@@ -26557,10 +26557,10 @@ class WebXRController {
 
 				}
 				//squeeze, squeezestart, & squeezeend
-				const middleTip = hand.joints[ 'middle-finger-tip' ];
-				const ringTip = hand.joints[ 'ring-finger-tip' ];
-				const pinkyTip = hand.joints[ 'pinky-finger-tip' ];
-				const middleMetacarpal = hand.joints[ 'middle-finger-metacarpal' ];				
+				const middleTip = hand.joints[ 'middle-finger-tip'];
+				const ringTip = hand.joints[ 'ring-finger-tip'];
+				const pinkyTip = hand.joints[ 'pinky-finger-tip'];
+				const middleMetacarpal = hand.joints[ 'middle-finger-metacarpal'];				
 
 				//middle point of 3 tips
 				const squeezeCenter = new Vector3((middleTip.position.x +ringTip.position.x + pinkyTip.position.x)/3,
@@ -26591,12 +26591,12 @@ class WebXRController {
 
 				}
 
-				//point, pointstart, &pointend
+				//pointing - pointstart, &pointend
 				const pointDistance = squeezeCenter.distanceTo(indexTip.position);
 				const minimumPointDistance = 0.075;
 				const pointThreshold = 0.005;
 
-				if ( hand.inputState.pointing && pointDistance <= minimumPointDistance ) {
+				if ( hand.inputState.pointing && pointDistance <= minimumPointDistance - pointThreshold ) {
 
 					hand.inputState.pointing = false;
 					this.dispatchEvent( {
@@ -26605,11 +26605,39 @@ class WebXRController {
 						target: this
 					} );
 
-				} else if ( ! hand.inputState.pointing && pointDistance > minimumPointDistance ) {
+				} else if ( ! hand.inputState.pointing && pointDistance > minimumPointDistance + pointThreshold) {
 
 					hand.inputState.pointing = true;
 					this.dispatchEvent( {
 						type: 'pointstart',
+						handedness: inputSource.handedness,
+						target: this
+					} );
+
+				}
+
+				//thumbtriggerdown, thumbtriggerup
+				const indexIntermediate = hand.joints['index-finger-phalanx-intermediate'];
+				const middleIntermediate = hand.joints['middle-finger-phalanx-intermediate'];
+				const fistTriggerDistance = thumbTip.position.distanceTo(indexIntermediate.position);
+				const pointTriggerDistance = thumbTip.position.distanceTo(middleIntermediate.position);
+				const minimumTriggerDistance = 0.04;
+				const triggerThreshold = 0.005;
+
+				if ( hand.inputState.thumbtrigger && hand.inputState.squeezing && (minimumTriggerDistance > fistTriggerDistance + triggerThreshold && minimumTriggerDistance > pointTriggerDistance + triggerThreshold)) {
+
+					hand.inputState.thumbtrigger = false;
+					this.dispatchEvent( {
+						type: 'triggerup',
+						handedness: inputSource.handedness,
+						target: this
+					} );
+
+				} else if ( ! hand.inputState.thumbtrigger && hand.inputState.squeezing && (minimumTriggerDistance <= fistTriggerDistance + triggerThreshold || minimumTriggerDistance <= pointTriggerDistance + triggerThreshold)) {
+
+					hand.inputState.thumbtrigger = true;
+					this.dispatchEvent( {
+						type: 'triggerdown',
 						handedness: inputSource.handedness,
 						target: this
 					} );

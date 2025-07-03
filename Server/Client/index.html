@@ -392,6 +392,8 @@
 				hand1.addEventListener('squeezeend', onSqueezeEndLeft);
 				hand1.addEventListener('pointstart', onPointStartLeft);
 				hand1.addEventListener('pointend', onPointEndLeft);
+				hand1.addEventListener('triggerup', onTriggerUpLeft);
+				hand1.addEventListener('triggerdown', onTriggerDownLeft);
 				
 				hand1.add( handModelFactory.createHandModel( hand1 ) );
 				hand1.name = 'hand1';
@@ -410,6 +412,9 @@
 				hand2.addEventListener('squeezeend', onSqueezeEndRight);
 				hand2.addEventListener('pointstart', onPointStartRight);
 				hand2.addEventListener('pointend', onPointEndRight);
+				hand2.addEventListener('triggerup', onTriggerUpRight);
+				hand2.addEventListener('triggerdown', onTriggerDownRight);
+
 				hand2.add( handModelFactory.createHandModel( hand2 ) );				
 				hand2.matrixAutoUpdate = true;
 				hand2.name = 'hand2';
@@ -420,16 +425,13 @@
 				const geometry = new THREE.BufferGeometry().setFromPoints( [ new THREE.Vector3( 0, 0, 0 ), new THREE.Vector3( 0, 0, - 1 ) ] );
 
 				const line = new THREE.Line( geometry );
-				line.name = 'line';
+				line.name = 'selectLine';
 				line.scale.z = 5;
 				//line.visible = false;
 
 				controller1.add( line.clone() );
 				controller2.add( line.clone() );
-				console.log(hand1);
-				//controller1.joints['index-finger-tip'].add( line.clone() );
-				//controller2.joints['index-finger-tip'].add( line.clone() );
-
+				
 				window.addEventListener( 'resize', onWindowResize );
 
 			}
@@ -641,6 +643,22 @@
 				hand1.joints['index-finger-tip'].remove(pointerLine);
 				controller1.children[0].visible = true;
 				
+			}
+
+			function onTriggerDownRight(event){
+				console.log('trigger down right');
+			}
+
+			function onTriggerUpRight(event){
+				console.log('trigger up right');
+			}
+
+			function onTriggerDownLeft(event){
+				console.log('trigger down left');
+			}
+
+			function onTriggerUpLeft(event){
+				console.log('trigger up left');
 			}
 				
 
