@@ -646,18 +646,51 @@
 			}
 
 			function onTriggerDownRight(event){
+				if(hand2.joints['index-finger-tip'].getObjectByName('line')){
+					hand2.joints['index-finger-tip'].getObjectByName('line').material.color = new THREE.Color(0xffff00);
+					hand2.joints['index-finger-tip'].getObjectByName('line').material.needsUpdate = true;
+				}
+				if(controller2.children[0].visible){
+					controller2.children[0].material.color = new THREE.Color(0xffff00);
+					controller2.children[0].material.needsUpdate = true;
+				}
+
 				console.log('trigger down right');
 			}
 
 			function onTriggerUpRight(event){
+				if(hand2.joints['index-finger-tip'].getObjectByName('line')){
+					hand2.joints['index-finger-tip'].getObjectByName('line').material.color = new THREE.Color(0xffffff);
+					hand2.joints['index-finger-tip'].getObjectByName('line').material.needsUpdate = true;
+				}
+				if(controller2.children[0].visible){
+					controller2.children[0].material.color = new THREE.Color(0xffffff);
+					controller2.children[0].material.needsUpdate = true;
+				}
 				console.log('trigger up right');
 			}
 
 			function onTriggerDownLeft(event){
+				if(hand1.joints['index-finger-tip'].getObjectByName('line')){
+					hand1.joints['index-finger-tip'].getObjectByName('line').material.color = new THREE.Color(0xffff00);
+					hand1.joints['index-finger-tip'].getObjectByName('line').material.needsUpdate = true;
+				}
+				if(controller1.children[0].visible){
+					controller1.children[0].material.color = new THREE.Color(0xffff00);
+					controller1.children[0].material.needsUpdate = true;
+				}
 				console.log('trigger down left');
 			}
 
 			function onTriggerUpLeft(event){
+				if(hand1.joints['index-finger-tip'].getObjectByName('line')){
+					hand1.joints['index-finger-tip'].getObjectByName('line').material.color = new THREE.Color(0xffffff);
+					hand1.joints['index-finger-tip'].getObjectByName('line').material.needsUpdate = true;
+				}
+				if(controller1.children[0].visible){
+					controller1.children[0].material.color = new THREE.Color(0xffffff);
+					controller1.children[0].material.needsUpdate = true;
+				}
 				console.log('trigger up left');
 			}
 				

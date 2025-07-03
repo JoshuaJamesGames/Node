@@ -26621,10 +26621,10 @@ class WebXRController {
 				const middleIntermediate = hand.joints['middle-finger-phalanx-intermediate'];
 				const fistTriggerDistance = thumbTip.position.distanceTo(indexIntermediate.position);
 				const pointTriggerDistance = thumbTip.position.distanceTo(middleIntermediate.position);
-				const minimumTriggerDistance = 0.04;
+				const minimumTriggerDistance = 0.03;
 				const triggerThreshold = 0.005;
 
-				if ( hand.inputState.thumbtrigger && hand.inputState.squeezing && (minimumTriggerDistance > fistTriggerDistance + triggerThreshold && minimumTriggerDistance > pointTriggerDistance + triggerThreshold)) {
+				if ( hand.inputState.thumbtrigger && hand.inputState.squeezing && (fistTriggerDistance > minimumTriggerDistance + triggerThreshold && pointTriggerDistance > minimumTriggerDistance + triggerThreshold)) {
 
 					hand.inputState.thumbtrigger = false;
 					this.dispatchEvent( {
@@ -26633,7 +26633,7 @@ class WebXRController {
 						target: this
 					} );
 
-				} else if ( ! hand.inputState.thumbtrigger && hand.inputState.squeezing && (minimumTriggerDistance <= fistTriggerDistance + triggerThreshold || minimumTriggerDistance <= pointTriggerDistance + triggerThreshold)) {
+				} else if ( ! hand.inputState.thumbtrigger && hand.inputState.squeezing && (fistTriggerDistance <= minimumTriggerDistance - triggerThreshold || pointTriggerDistance <= minimumTriggerDistance - triggerThreshold)) {
 
 					hand.inputState.thumbtrigger = true;
 					this.dispatchEvent( {
