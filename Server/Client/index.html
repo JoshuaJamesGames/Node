@@ -151,7 +151,7 @@
 								clientTesseract.material.emissive = new THREE.Color(backendPlayer.color);
 								clientTesseract.material.emissiveIntensity = .5;
 								clientTesseract.material.opacity = .75;
-								//clientTesseract.position = new THREE.Vector3(0.15, 0.8, -0.2);
+								clientTesseract.position.copy(new THREE.Vector3(0.15, 0.8, -0.3));
 								
 								if(socket.id == id){
 									socket.emit('createPlayerObject', {
@@ -289,7 +289,7 @@
 				
 				let player = scene.getObjectByName(object.playerId);
 				let newObject = loader.parse(object.object3d.object3d);
-				newObject.position.copy(new THREE.Vector3(0.15, 0.7, -0.3));
+				newObject.position.copy(object.object3d.position);
 				newObject.scale.setScalar(.5);
 				newObject.uuid = object.uuid;
 				player.add(newObject)
@@ -609,7 +609,6 @@
 				line.name = 'line';
 				line.scale.z = 5;
 				hand2.joints['index-finger-tip'].add(line);
-
 				controller2.children[0].visible = false;
 				
 				
@@ -620,8 +619,7 @@
 				const controller = event.target;
 				const pointerLine = hand2.joints['index-finger-tip'].getObjectByName('line');
 				hand2.joints['index-finger-tip'].remove(pointerLine);
-				controller2.children[0].visible = true;
-				
+				controller2.children[0].visible = true;				
 
 			}
 
@@ -632,7 +630,6 @@
 				line.name = 'line';
 				line.scale.z = 5;
 				hand1.joints['index-finger-tip'].add(line);
-
 				controller1.children[0].visible = false;
 				
 			}
@@ -654,8 +651,7 @@
 					controller2.children[0].material.color = new THREE.Color(0xffff00);
 					controller2.children[0].material.needsUpdate = true;
 				}
-
-				console.log('trigger down right');
+				
 			}
 
 			function onTriggerUpRight(event){
@@ -667,7 +663,7 @@
 					controller2.children[0].material.color = new THREE.Color(0xffffff);
 					controller2.children[0].material.needsUpdate = true;
 				}
-				console.log('trigger up right');
+				
 			}
 
 			function onTriggerDownLeft(event){
@@ -679,7 +675,7 @@
 					controller1.children[0].material.color = new THREE.Color(0xffff00);
 					controller1.children[0].material.needsUpdate = true;
 				}
-				console.log('trigger down left');
+				
 			}
 
 			function onTriggerUpLeft(event){
@@ -691,7 +687,7 @@
 					controller1.children[0].material.color = new THREE.Color(0xffffff);
 					controller1.children[0].material.needsUpdate = true;
 				}
-				console.log('trigger up left');
+				
 			}
 				
 
