@@ -152,6 +152,7 @@
 								clientTesseract.material.emissiveIntensity = .5;
 								clientTesseract.material.opacity = .75;
 								clientTesseract.position.copy(new THREE.Vector3(0.15, 0.8, -0.3));
+								clientTesseract.scale.setScalar(.5);
 								
 								if(socket.id == id){
 									socket.emit('createPlayerObject', {
@@ -286,11 +287,11 @@
 			});
 			
 			socket.on('spawnPlayerObject', (object)=>{
-				
+				console.log(object);
 				let player = scene.getObjectByName(object.playerId);
 				let newObject = loader.parse(object.object3d.object3d);
 				newObject.position.copy(object.object3d.position);
-				newObject.scale.setScalar(.5);
+				newObject.scale.copy(object.object3d.scale);
 				newObject.uuid = object.uuid;
 				player.add(newObject)
 				
