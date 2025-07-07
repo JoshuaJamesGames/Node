@@ -50,7 +50,8 @@
 
 			let controls;
 
-			let grabbing = false;
+			let pinching = false;
+			let squeezing = false;
 			const scaling = {
 				active: false,
 				initialDistance: 0,
@@ -453,7 +454,7 @@
 
 				const controller = event.target;
 
-				if ( grabbing ) {
+				if ( pinching ) {
 
 					const indexTip = controller.joints[ 'index-finger-tip' ];
 					const touchable = collideObject( indexTip );
@@ -533,7 +534,7 @@
 				const object = collideObject( indexTip );
 				if ( object ) {
 
-					grabbing = true;
+					pinching = true;
 					indexTip.attach( object );
 					//object.material.emissive.b = 1;
 					controller.userData.selected = object;
@@ -557,7 +558,7 @@
 					delete objectsToUpdate[object.uuid];
 					//console.log(objectsToUpdate);
 					controller.userData.selected = undefined;
-					grabbing = false;
+					pinching = false;
 
 				}
 
@@ -568,10 +569,19 @@
 			function onSqueezeStartRight( event ){
 				const controller = event.target;
 				const rightHand = scene.getObjectByProperty('name', socket.id+'rightHandWrist');
-				rightHand.material.emissive.b = 1;				
-				rightHandSqueeze.position.copy(scene.getObjectByProperty('name', 'hand2').joints.wrist.position);
-				rightHandSqueeze.rotation.copy(scene.getObjectByProperty('name', 'hand2').joints.wrist.rotation);
-				rightHandSqueeze.squeezing = true;
+				rightHand.material.emissive.b = 1;
+
+				const tesseractBounds = new THREE.Box3().setFromObject(controller.parent.getObjectByName('Tesseract'));
+				const middleKnuckle = hand2.joints['middle-finger-phalanx-proximal'];
+				let tmpVector4 = new THREE.Vector3();
+				middleKnuckle.getWorldPosition(tmpVector4);
+				console.log(tesseractBounds.containsPoint(tmpVector4));
+
+				if (tesseractBounds.containsPoint(tmpVector4)){
+					rightHandSqueeze.position.copy(scene.getObjectByProperty('name', 'hand2').joints.wrist.position);
+					rightHandSqueeze.rotation.copy(scene.getObjectByProperty('name', 'hand2').joints.wrist.rotation);
+					rightHandSqueeze.squeezing = true;
+				}
 				
 				
 				
