@@ -45,8 +45,13 @@
 
 			const tmpVector1 = new THREE.Vector3();
 			const tmpVector2 = new THREE.Vector3();
+			const tmpVector3 = new THREE.Vector3();
+			const tmpVector4 = new THREE.Vector3();
 
 			const loader = new THREE.ObjectLoader();
+
+			const selectRayCaster = new THREE.Raycaster();
+			const tempRayCastMatrix = new THREE.Matrix4();
 
 			let controls;
 
@@ -489,7 +494,7 @@
 				spawn.geometry.computeBoundingSphere();
 
 				const indexTip = controller.joints[ 'index-finger-tip' ];
-				const tmpVector3 = new THREE.Vector3();
+				
 				indexTip.getWorldPosition(tmpVector3);
 				spawn.position.copy(tmpVector3);
 				spawn.rotation.copy( indexTip.rotation );
@@ -573,10 +578,9 @@
 
 				const tesseractBounds = new THREE.Box3().setFromObject(controller.parent.getObjectByName('Tesseract'));
 				const middleKnuckle = hand2.joints['middle-finger-phalanx-proximal'];
-				let tmpVector4 = new THREE.Vector3();
+				
 				middleKnuckle.getWorldPosition(tmpVector4);
-				console.log(tesseractBounds.containsPoint(tmpVector4));
-
+				
 				if (tesseractBounds.containsPoint(tmpVector4)){
 					rightHandSqueeze.position.copy(scene.getObjectByProperty('name', 'hand2').joints.wrist.position);
 					rightHandSqueeze.rotation.copy(scene.getObjectByProperty('name', 'hand2').joints.wrist.rotation);
@@ -657,11 +661,23 @@
 				if(hand2.joints['index-finger-tip'].getObjectByName('line')){
 					hand2.joints['index-finger-tip'].getObjectByName('line').material.color = new THREE.Color(0xffff00);
 					hand2.joints['index-finger-tip'].getObjectByName('line').material.needsUpdate = true;
+
+					
+					const pointLineMatrix = hand2.joints['index-finger-tip'].getObjectByName('line').matrixWorld;
+					const tmpMatrix = new THREE.Matrix4;
+					tmpMatrix.identity().extractRotation(pointLineMatrix);
+					selectRayCaster.ray.origin.setFromMatrixPosition(pointLineMatrix);
+					selectRayCaster.ray.direction.set(0, 0, -1).applyMatrix4(tmpMatrix);
+					console.log(selectRayCaster.intersectObjects(collideObjects));			
+					
+					
 				}
 				if(controller2.children[0].visible){
 					controller2.children[0].material.color = new THREE.Color(0xffff00);
 					controller2.children[0].material.needsUpdate = true;
 				}
+
+
 				
 			}
 
