@@ -678,16 +678,8 @@
 					
 					if (selectedObjects.length > 0){
 						for (let i = 0 ; i < selectedObjects.length; i++){
-							
-							if(selectedObjects[i].object.userData.selected){
-								selectedObjects[i].object.userData.selected = false;
-								selectedObjects[i].object.material.emissive.b = 0;
-							}else{
-								selectedObjects[i].object.userData.selected = true;
-								selectedObjects[i].object.material.emissive.b = 1;
-							}
-						}
-						
+							selected(selectedObjects[i].object);							
+						}						
 					}
 					
 					
@@ -739,6 +731,16 @@
 					controller1.children[0].material.needsUpdate = true;
 				}
 				
+			}
+
+			function selected(object){
+				if(object.userData.selected){
+					object.userData.selected = false;
+					object.material.emissive.b = 0;
+				}else{
+					object.userData.selected = true;
+					object.material.emissive.b = 1;
+				}
 			}
 				
 
