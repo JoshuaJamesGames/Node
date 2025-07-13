@@ -75,6 +75,9 @@
 			//Array for collision checking
 			const collideObjects = [];
 
+			//holder for selected objects
+			const selectedObjects = [];
+
 			//Current connected clients
 			const clientPlayers = {};
 
@@ -275,6 +278,7 @@
 						newObject.rotation.copy(backendObjects[id].rotation);
 						newObject.scale.copy(backendObjects[id].scale);
 						newObject.userData.isWorldObject = true;
+						newObject.userData.selected = false;
 						collideObjects.push( newObject );
 						scene.add( newObject );
 					}
@@ -288,6 +292,7 @@
 				newObject.rotation.copy(object.object3d.rotation);
 				newObject.uuid = object.uuid;
 				newObject.userData.isWorldObject = true;
+				newObject.userData.selected = false;
 				collideObjects.push( newObject );
 				scene.add( newObject );
 			});
@@ -668,7 +673,26 @@
 					tmpMatrix.identity().extractRotation(pointLineMatrix);
 					selectRayCaster.ray.origin.setFromMatrixPosition(pointLineMatrix);
 					selectRayCaster.ray.direction.set(0, 0, -1).applyMatrix4(tmpMatrix);
-					console.log(selectRayCaster.intersectObjects(collideObjects));			
+					
+					const selectedObjects = selectRayCaster.intersectObjects(collideObjects);
+					
+					if (selectedObjects.length > 0){
+						for (let i = 0 ; i < selectedObjects.length; i++){
+							
+							if(selectedObjects[i].object.userData.selected){
+								selectedObjects[i].object.userData.selected = false;
+								selectedObjects[i].object.material.emissive.b = 0;
+							}else{
+								selectedObjects[i].object.userData.selected = true;
+								selectedObjects[i].object.material.emissive.b = 1;
+							}
+						}
+						
+					}
+					
+					
+
+								
 					
 					
 				}
