@@ -42,6 +42,10 @@
 			let controller1, controller2;
 			let controllerGrip1, controllerGrip2;
 
+			const iconWidth = .5;
+			const iconHeight = .5;
+			const iconDefaultPosition = new THREE.Vector3(.5,.5,-.5);
+
 
 			const tmpVector1 = new THREE.Vector3();
 			const tmpVector2 = new THREE.Vector3();
@@ -92,7 +96,7 @@
 			//For debugging - hard to wear a headset and view components
 			setInterval(()=>{
 				
-				console.log(scene);
+				//console.log(scene);
 				/* My quest to find where to offset the xr position
 				console.log(renderer.xr);
 				console.log(renderer.xr.getSession());
@@ -298,7 +302,7 @@
 			});
 			
 			socket.on('spawnPlayerObject', (object)=>{
-				console.log(object);
+				//console.log(object);
 				let player = scene.getObjectByName(object.playerId);
 				let newObject = loader.parse(object.object3d.object3d);
 				newObject.position.copy(object.object3d.position);
@@ -739,7 +743,15 @@
 					object.material.emissive.b = 0;
 				}else{
 
-					
+					const textureLoader = new THREE.TextureLoader();
+    				const iconTexture = textureLoader.load('icons/trash-can.png');
+					const planeGeometry = new THREE.PlaneGeometry(iconWidth, iconHeight);
+					const material = new THREE.MeshBasicMaterial({ color: 0xffff00 });
+					const iconMesh = new THREE.Mesh(planeGeometry, material);
+					iconMesh.position.set(iconDefaultPosition);
+					iconMesh.name = 'delete';
+					object.add(iconMesh);
+					//console.log(object);
 					object.userData.selected = true;
 					object.material.emissive.b = 1;
 				}
